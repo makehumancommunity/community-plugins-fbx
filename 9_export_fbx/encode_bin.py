@@ -16,15 +16,18 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Script copyright (C) 2013 Campbell Barton
-# Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
+# <pep8 compliant>
 
-from . import data_types
+# Script copyright (C) 2013 Campbell Barton
+
+try:
+    from . import data_types
+except:
+    import data_types
 
 from struct import pack
 import array
 import zlib
-import io
 
 _BLOCK_SENTINEL_LENGTH = 13
 _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
@@ -64,8 +67,7 @@ class FBXElem:
         self._props_length = -1
 
     def add_bool(self, data):
-        assert(isinstance(data, (bool, int)))
-        data = bool(data)
+        assert(isinstance(data, bool))
         data = pack('?', data)
 
         self.props_type.append(data_types.BOOL)
@@ -73,7 +75,6 @@ class FBXElem:
 
     def add_int16(self, data):
         assert(isinstance(data, int))
-        data = int(data)
         data = pack('<h', data)
 
         self.props_type.append(data_types.INT16)
@@ -81,7 +82,6 @@ class FBXElem:
 
     def add_int32(self, data):
         assert(isinstance(data, int))
-        data = int(data)
         data = pack('<i', data)
 
         self.props_type.append(data_types.INT32)
@@ -89,23 +89,20 @@ class FBXElem:
 
     def add_int64(self, data):
         assert(isinstance(data, int))
-        data = int(data)
         data = pack('<q', data)
 
         self.props_type.append(data_types.INT64)
         self.props.append(data)
 
     def add_float32(self, data):
-        assert(isinstance(data, (int, float)))
-        data = float(data)
+        assert(isinstance(data, float))
         data = pack('<f', data)
 
         self.props_type.append(data_types.FLOAT32)
         self.props.append(data)
 
     def add_float64(self, data):
-        assert(isinstance(data, (int, float)))
-        data = float(data)
+        assert(isinstance(data, float))
         data = pack('<d', data)
 
         self.props_type.append(data_types.FLOAT64)
@@ -119,8 +116,6 @@ class FBXElem:
         self.props.append(data)
 
     def add_string(self, data):
-        if isinstance(data, str):
-            data = bytes(data, encoding='utf-8')
         assert(isinstance(data, bytes))
         data = pack('<I', len(data)) + data
 
@@ -128,9 +123,8 @@ class FBXElem:
         self.props.append(data)
 
     def add_string_unicode(self, data):
-        if isinstance(data, str):
-            data = data.encode('utf8')
-        assert(isinstance(data, bytes))
+        assert(isinstance(data, str))
+        data = data.encode('utf8')
         data = pack('<I', len(data)) + data
 
         self.props_type.append(data_types.STRING)
@@ -145,16 +139,15 @@ class FBXElem:
         if _IS_BIG_ENDIAN:
             data = data[:]
             data.byteswap()
-        #data = data.tobytes()
-        data = data.tostring()  # Python 2 equivalent
+        data = data.tobytes()
 
         # mimic behavior of fbxconverter (also common sense)
         # we could make this configurable.
-        encoding = 0 if len(data) <= 128 else 0
+        encoding = 0 if len(data) <= 128 else 1
         if encoding == 0:
             pass
         elif encoding == 1:
-            data = zlib.compress(data, 9)
+            data = zlib.compress(data, 1)
 
         comp_len = len(data)
 
@@ -234,34 +227,20 @@ class FBXElem:
         assert(self._end_offset != -1)
         assert(self._props_length != -1)
 
-        btell = tell()
-        offset = 12  # 3 uints
-
         write(pack('<3I', self._end_offset, len(self.props), self._props_length))
 
-        assert(tell() - btell == offset)
-        offset += 1 + len(self.id)  # len + idname
-
-        #write(bytes((len(self.id),)))
-        write( pack('<B', len(self.id)) )  # String length is one byte
-        write( self.id )
-
-        assert(tell() - btell == offset)
+        write(bytes((len(self.id),)))
+        write(self.id)
 
         for i, data in enumerate(self.props):
-            #write(bytes((self.props_type[i],)))
-            write( pack('<B', self.props_type[i]) )
+            write(bytes((self.props_type[i],)))
             write(data)
-
-            # 1 byte for the prop type
-            offset += 1 + len(data)
-            assert(tell() - btell == offset)
 
         self._write_children(write, tell, is_last)
 
         if tell() != self._end_offset:
             raise IOError("scope length not reached, "
-                          "something is wrong (%d)" % (self._end_offset - tell()))
+                          "something is wrong (%d)" % (end_offset - tell()))
 
     def _write_children(self, write, tell, is_last):
         if self.elems:
@@ -283,22 +262,18 @@ def _write_timedate_hack(elem_root):
     ok = 0
     for elem in elem_root.elems:
         if elem.id == b'FileId':
-            #assert(elem.props_type[0] == b'R'[0])
-            #assert(len(elem.props_type) == 1)
-            #elem.props.clear()
-            del elem.props[:]
-            #elem.props_type.clear()
-            del elem.props_type[:]
+            assert(elem.props_type[0] == b'R'[0])
+            assert(len(elem.props_type) == 1)
+            elem.props.clear()
+            elem.props_type.clear()
 
             elem.add_bytes(_FILE_ID)
             ok += 1
         elif elem.id == b'CreationTime':
-            #assert(elem.props_type[0] == b'S'[0])
-            #assert(len(elem.props_type) == 1)
-            #elem.props.clear()
-            del elem.props[:]
-            #elem.props_type.clear()
-            del elem.props_type[:]
+            assert(elem.props_type[0] == b'S'[0])
+            assert(len(elem.props_type) == 1)
+            elem.props.clear()
+            elem.props_type.clear()
 
             elem.add_string(_TIME_ID)
             ok += 1
@@ -307,16 +282,11 @@ def _write_timedate_hack(elem_root):
             break
 
     if ok != 2:
-        import log
-        log.debug("Missing fields!")
+        print("Missing fields!")
 
 
-def write(fn, elem_root, version=None):
-    assert(elem_root.id == b'')  # If this check fails the elem_root is not a root element
-
-    if version is None:
-        from . import fbx_utils
-        version = fbx_utils.FBX_VERSION
+def write(fn, elem_root, version):
+    assert(elem_root.id == b'')
 
     with open(fn, 'wb') as f:
         write = f.write
