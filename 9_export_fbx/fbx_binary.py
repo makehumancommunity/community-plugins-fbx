@@ -27,13 +27,13 @@ import log
 from .fbx_utils import *
 
 # Units convertors!
-convert_sec_to_ktime = units_convertor(b"second", b"ktime")
-convert_sec_to_ktime_iter = units_convertor_iter(b"second", b"ktime")
+convert_sec_to_ktime = units_convertor("second", "ktime")
+convert_sec_to_ktime_iter = units_convertor_iter("second", "ktime")
 
-convert_mm_to_inch = units_convertor(b"millimeter", b"inch")
+convert_mm_to_inch = units_convertor("millimeter", "inch")
 
-convert_rad_to_deg = units_convertor(b"radian", b"degree")
-convert_rad_to_deg_iter = units_convertor_iter(b"radian", b"degree")
+convert_rad_to_deg = units_convertor("radian", "degree")
+convert_rad_to_deg_iter = units_convertor_iter("radian", "degree")
 
 
 # ##### Templates #####
@@ -618,8 +618,8 @@ def fbx_header_elements(root, config, filepath, time=None):
     time is expected to be a datetime.datetime object, or None (using now() in this case).
     """
     import makehuman
-    app_vendor = b"MakeHuman.org"
-    app_name = b"MakeHuman"
+    app_vendor = "MakeHuman.org"
+    app_name = "MakeHuman"
     app_ver = makehuman.getVersionStr().encode('utf-8')
 
     # ##### Start of FBXHeaderExtension element.
@@ -645,7 +645,7 @@ def fbx_header_elements(root, config, filepath, time=None):
     elem_data_single_int32(elem, b"Millisecond", time.microsecond // 1000)
 
     # The FBX converter refuses to load the character unless this is the creator.
-    elem_data_single_string_unicode(header_ext, b"Creator", b"FBX SDK/FBX Plugins version 2013.3")
+    elem_data_single_string_unicode(header_ext, "Creator", "FBX SDK/FBX Plugins version 2013.3")
     #elem_data_single_string_unicode(header_ext, b"Creator", "%s - %s" % (app_name, app_ver))
 
     # 'SceneInfo' seems mandatory to get a valid FBX file...
@@ -665,19 +665,19 @@ def fbx_header_elements(root, config, filepath, time=None):
     elem_data_single_string(meta_data, b"Comment", b"")
 
     props = elem_properties(scene_info)
-    elem_props_set(props, b"p_string_url", b"DocumentUrl", filepath)    # TODO set to current export filename?
-    elem_props_set(props, b"p_string_url", b"SrcDocumentUrl", filepath)
+    elem_props_set(props, "p_string_url", b"DocumentUrl", filepath)    # TODO set to current export filename?
+    elem_props_set(props, "p_string_url", b"SrcDocumentUrl", filepath)
     original = elem_props_compound(props, b"Original")
-    original(b"p_string", b"ApplicationVendor", app_vendor)
-    original(b"p_string", b"ApplicationName", app_name)
-    original(b"p_string", b"ApplicationVersion", app_ver)
-    original(b"p_datetime", b"DateTime_GMT", b"")
-    original(b"p_string", b"FileName", b"")
+    original("p_string", b"ApplicationVendor", app_vendor)
+    original("p_string", b"ApplicationName", app_name)
+    original("p_string", b"ApplicationVersion", app_ver)
+    original("p_datetime", b"DateTime_GMT", b"")
+    original("p_string", b"FileName", b"")
     lastsaved = elem_props_compound(props, b"LastSaved")
-    lastsaved(b"p_string", b"ApplicationVendor", app_vendor)
-    lastsaved(b"p_string", b"ApplicationName", app_name)
-    lastsaved(b"p_string", b"ApplicationVersion", app_ver)
-    lastsaved(b"p_datetime", b"DateTime_GMT", b"")
+    lastsaved("p_string", b"ApplicationVendor", app_vendor)
+    lastsaved("p_string", b"ApplicationName", app_name)
+    lastsaved("p_string", b"ApplicationVersion", app_ver)
+    lastsaved("p_datetime", b"DateTime_GMT", b"")
 
     # ##### End of FBXHeaderExtension element.
 
