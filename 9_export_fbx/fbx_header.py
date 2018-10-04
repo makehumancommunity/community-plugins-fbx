@@ -52,9 +52,10 @@ def writeHeader(fp, filepath, config):
         from . import fbx_binary
         import os
         root = fp
-        fbx_binary.fbx_header_elements(root, config, filepath, today)
+        #fbx_binary.fbx_header_elements(root, config, filepath, today)
+        fbx_binary.fbx_header_elements(root, None, today)
         name = os.path.splitext(os.path.basename(filepath))[0]
-        fbx_binary.fbx_documents_elements(root, name, id)
+        fbx_binary.fbx_documents_elements(root, None, name)
         fbx_binary.fbx_references_elements(root)
         return
 
