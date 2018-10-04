@@ -359,6 +359,11 @@ def _elem_data_vec(elem, name, value, func_name):
         func(v)
     return sub_elem
 
+def get_child_element(parentelem, name):
+    for child in parentelem.elems:
+        if child.id == name:
+            return child
+    return None
 
 def elem_data_single_bool(elem, name, value):
     return _elem_data_single(elem, name, value, "add_bool")
@@ -572,6 +577,42 @@ def elem_props_template_finalize(template, elem):
 
 FBXTemplate = namedtuple("FBXTemplate", ("type_name", "prop_type_name", "properties", "nbr_users", "written"))
 
+def get_properties(properties):
+    for p in properties:
+        if len(p) < 3:
+            continue
+        if len(p) == 3:
+            name, ptype, value = p
+            animatable = False
+            custom = False
+        elif len(p) == 4:
+            name, ptype, value, animatable = p
+            custom = False
+        else:
+            name, ptype, value, animatable, custom = p
+
+        yield (name, ptype, value, animatable, custom)
+
+def fbx_template_generate(definitionsNode, objectType_name, users_count, propertyTemplate_name=None, properties=[]):
+    template = elem_data_single_string(definitionsNode, b"ObjectType", objectType_name)
+    elem_data_single_int32(template, b"Count", users_count)
+
+    if propertyTemplate_name and len(properties) > 0:
+        elem = elem_data_single_string(template, b"PropertyTemplate", propertyTemplate_name)
+        props = elem_properties(elem)
+
+        for name, ptype, value, animatable, custom in get_properties(properties):
+            print(props)
+            print(ptype)
+            print(name)
+            print(value)
+            print(animatable)
+            elem_props_set(props, ptype, name, value, animatable, custom)
+            #try:
+            #
+            #except Exception as e:
+            #    import log
+            #    log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
 
 def fbx_templates_generate(root, fbx_templates):
     # We may have to gather different templates in the same node (e.g. NodeAttribute template gathers properties
