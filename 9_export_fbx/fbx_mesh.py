@@ -64,12 +64,12 @@ def writeObjectDefs(fp, meshes, nShapes, config):
     if config.binary:
 
         properties = [
-            (b"Color", b"p_color_rgb", [0.8, 0.8, 0.8]),
-            (b"BBoxMin", b"p_vector_3d", [0, 0, 0]),
-            (b"BBoxMax", b"p_vector_3d", [0, 0, 0]),
-            (b"Primary Visibility", b"p_bool", True),
-            (b"Casts Shadows", b"p_bool", True),
-            (b"Receive Shadows", b"p_bool", True)
+            (b"Color", ((0.8, 0.8, 0.8), "p_color_rgb", False)),
+            (b"BBoxMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+            (b"BBoxMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+            (b"Primary Visibility", (True, "p_bool", False)),
+            (b"Casts Shadows", (True, "p_bool", False)),
+            (b"Receive Shadows", (True, "p_bool", False))
         ]
 
         from . import fbx_binary
