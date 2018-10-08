@@ -22,4 +22,45 @@ that the code was not taken from a bundled FBX at the time. Rather there must've
 
 The first blender release with a similar code structure is 2.71. We'll use that for comparisons.
 
+## File mappings
+
+The MH code has been refactored into files with different names than the blender ones. This is a map of which MH code files
+map onto which blender ones. 
+
+### data_types.py
+
+This is a 100% mapping onto the blender file with the same name.
+
+### encode_bin.py
+
+This is an almost 100% mapping onto the blender file, but with some modifications (which are probably only for py2 compat)
+
+### fbx_anim.py
+
+This is a mostly new file, but constants have been taken from blender's export_fbx_bin. Lines 57-78 MH side largely matches
+lines 443-470 blender side for 2.71, and 474-501 for 2.79.
+
+### fbx_binary.py
+
+Large parts of this file matches blender's export_fbx_bin.py, but there are also huge differences. 
+
+
+### fbx_deformer.py
+
+### fbx_header.py
+
+### fbx_material.py
+
+### fbx_mesh.py
+
+### fbx_skeleton.py
+
+### fbx_utils_bin.py
+
+### fbx_utils.py
+
+### __init__.py
+
+### mh2fbx.py
+
 

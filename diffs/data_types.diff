@@ -1,0 +1,61 @@
+*** io_scene_fbx_blender_271/data_types.py	2014-06-16 14:01:52.000000000 +0200
+--- 9_export_fbx/data_types.py	2018-01-02 13:47:50.000000000 +0100
+***************
+*** 16,25 ****
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
+- # <pep8 compliant>
+- 
+  # Script copyright (C) 2006-2012, assimp team
+  # Script copyright (C) 2013 Blender Foundation
+  
+  BOOL = b'C'[0]
+  INT16 = b'Y'[0]
+--- 16,24 ----
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
+  # Script copyright (C) 2006-2012, assimp team
+  # Script copyright (C) 2013 Blender Foundation
++ # Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
+  
+  BOOL = b'C'[0]
+  INT16 = b'Y'[0]
+***************
+*** 45,51 ****
+  
+  ARRAY_INT32 = None
+  ARRAY_INT64 = None
+! for _t in 'ilq':
+      size = array.array(_t).itemsize
+      if size == 4:
+          ARRAY_INT32 = _t
+--- 44,50 ----
+  
+  ARRAY_INT32 = None
+  ARRAY_INT64 = None
+! for _t in 'il':  # typecode 'q' (signed long long) is only supported since python 3.3
+      size = array.array(_t).itemsize
+      if size == 4:
+          ARRAY_INT32 = _t
+***************
+*** 56,62 ****
+  if not ARRAY_INT32:
+      raise Exception("Impossible to get a 4-bytes integer type for array!")
+  if not ARRAY_INT64:
+!     raise Exception("Impossible to get an 8-bytes integer type for array!")
+  
+  ARRAY_FLOAT32 = None
+  ARRAY_FLOAT64 = None
+--- 55,64 ----
+  if not ARRAY_INT32:
+      raise Exception("Impossible to get a 4-bytes integer type for array!")
+  if not ARRAY_INT64:
+!     # In python 2 we have no 64bit int type (long long). We will use a 32bit integer (we don't need such large index space anyway).
+!     # However, it's possible to struct.pack this value as a 64bit int as 'q' type is available there.
+!     #raise Exception("Impossible to get an 8-bytes integer type for array!")
+!     ARRAY_INT64 = 'q'
+  
+  ARRAY_FLOAT32 = None
+  ARRAY_FLOAT64 = None
