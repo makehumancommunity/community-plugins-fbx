@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -37,7 +37,7 @@ Fbx exporter
 """
 
 import os.path
-import io
+import codecs
 
 from core import G
 import log
@@ -95,11 +95,11 @@ def exportFbx(filepath, config):
     G.app.progress(0.5, text="Exporting %s" % filepath)
 
     if config.binary:
-        from . import fbx_binary
+        import fbx_binary
         root = fbx_binary.elem_empty(None, b"")
         fp = root
     else:
-        fp = io.open(filepath, "w", encoding="utf-8")
+        fp = codecs.open(filepath, "w", encoding="utf-8")
 
     fbx_utils.resetId()  # Reset global ID generator
     fbx_utils.setAbsolutePath(filepath)  # TODO fix this
@@ -178,7 +178,7 @@ def exportFbx(filepath, config):
     # TODO support binary FBX export
     fbx_anim.writeTakes(fp, action, config)
     if config.binary:
-        from . import encode_bin
+        import encode_bin
         root = fp
         encode_bin.write(filepath, root)
     else:

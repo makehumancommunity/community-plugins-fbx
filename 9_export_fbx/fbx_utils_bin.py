@@ -1,3 +1,6 @@
+#!/usr/bin/python2.7
+# -*- coding: utf-8 -*-
+
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 #  This program is free software; you can redistribute it and/or
@@ -16,23 +19,20 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# <pep8 compliant>
-
 # Script copyright (C) Campbell Barton, Bastien Montagne
+# Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
 
 
 import math
-import time
 
 from collections import namedtuple, OrderedDict
-from collections.abc import Iterable
-from itertools import zip_longest, chain
+
 
 from . import encode_bin, data_types
 
 
 # "Constants"
-FBX_VERSION = 7400
+FBX_VERSION = 7300
 FBX_HEADER_VERSION = 1003
 FBX_SCENEINFO_VERSION = 100
 FBX_TEMPLATES_VERSION = 100
@@ -66,60 +66,49 @@ FBX_ANIM_PROPSGROUP_NAME = "d"
 FBX_KTIME = 46186158000  # This is the number of "ktimes" in one second (yep, precision over the nanosecond...)
 
 
-#MAT_CONVERT_LAMP = Matrix.Rotation(math.pi / 2.0, 4, 'X')  # Blender is -Z, FBX is -Y.
-#MAT_CONVERT_CAMERA = Matrix.Rotation(math.pi / 2.0, 4, 'Y')  # Blender is -Z, FBX is +X.
-# XXX I can't get this working :(
 # MAT_CONVERT_BONE = Matrix.Rotation(math.pi / 2.0, 4, 'Z')  # Blender is +Y, FBX is -X.
-#MAT_CONVERT_BONE = Matrix()
 
 
-BLENDER_OTHER_OBJECT_TYPES = {'CURVE', 'SURFACE', 'FONT', 'META'}
-BLENDER_OBJECT_TYPES_MESHLIKE = {'MESH'} | BLENDER_OTHER_OBJECT_TYPES
+BLENDER_OBJECT_TYPES_MESHLIKE = {'MESH'}
 
 
-# Lamps.
-FBX_LIGHT_TYPES = {
-    'POINT': 0,  # Point.
-    'SUN': 1,    # Directional.
-    'SPOT': 2,   # Spot.
-    'HEMI': 1,   # Directional.
-    'AREA': 3,   # Area.
-}
-FBX_LIGHT_DECAY_TYPES = {
-    'CONSTANT': 0,                   # None.
-    'INVERSE_LINEAR': 1,             # Linear.
-    'INVERSE_SQUARE': 2,             # Quadratic.
-    'CUSTOM_CURVE': 2,               # Quadratic.
-    'LINEAR_QUADRATIC_WEIGHTED': 2,  # Quadratic.
-}
-
+def getMeshOrientation(config):
+    if config.yUpFaceZ:
+        return ('Y', 'Z')
+    if config.yUpFaceX:
+        return ('Y', 'X')
+    if config.zUpFaceNegY:
+        return ('Z', '-Y')
+    if config.zUpFaceX:
+        return ('Z', 'X')
+    return ('Y', 'Z')
 
 RIGHT_HAND_AXES = {
-    # Up, Forward -> FBX values (tuples of (axis, sign), Up, Front, Coord).
-    ( 'X', '-Y'): ((0,  1), (1,  1), (2,  1)),
-    ( 'X',  'Y'): ((0,  1), (1, -1), (2, -1)),
-    ( 'X', '-Z'): ((0,  1), (2,  1), (1, -1)),
-    ( 'X',  'Z'): ((0,  1), (2, -1), (1,  1)),
-    ('-X', '-Y'): ((0, -1), (1,  1), (2, -1)),
-    ('-X',  'Y'): ((0, -1), (1, -1), (2,  1)),
-    ('-X', '-Z'): ((0, -1), (2,  1), (1,  1)),
-    ('-X',  'Z'): ((0, -1), (2, -1), (1, -1)),
-    ( 'Y', '-X'): ((1,  1), (0,  1), (2, -1)),
-    ( 'Y',  'X'): ((1,  1), (0, -1), (2,  1)),
-    ( 'Y', '-Z'): ((1,  1), (2,  1), (0,  1)),
-    ( 'Y',  'Z'): ((1,  1), (2, -1), (0, -1)),
-    ('-Y', '-X'): ((1, -1), (0,  1), (2,  1)),
-    ('-Y',  'X'): ((1, -1), (0, -1), (2, -1)),
-    ('-Y', '-Z'): ((1, -1), (2,  1), (0, -1)),
-    ('-Y',  'Z'): ((1, -1), (2, -1), (0,  1)),
-    ( 'Z', '-X'): ((2,  1), (0,  1), (1,  1)),
-    ( 'Z',  'X'): ((2,  1), (0, -1), (1, -1)),
-    ( 'Z', '-Y'): ((2,  1), (1,  1), (0, -1)),
-    ( 'Z',  'Y'): ((2,  1), (1, -1), (0,  1)),  # Blender system!
-    ('-Z', '-X'): ((2, -1), (0,  1), (1, -1)),
-    ('-Z',  'X'): ((2, -1), (0, -1), (1,  1)),
-    ('-Z', '-Y'): ((2, -1), (1,  1), (0,  1)),
-    ('-Z',  'Y'): ((2, -1), (1, -1), (0, -1)),
+    # Up, Front -> FBX values (tuples of (axis, sign), Up, Front, Coord).
+    ('X',  'Y'):  ((0, 1),  (1, 1),  (2, 1)),
+    ('X',  '-Y'): ((0, 1),  (1, -1), (2, -1)),
+    ('X',  'Z'):  ((0, 1),  (2, 1),  (1, -1)),
+    ('X',  '-Z'): ((0, 1),  (2, -1), (1, 1)),
+    ('-X', 'Y'):  ((0, -1), (1, 1),  (2, -1)),
+    ('-X', '-Y'): ((0, -1), (1, -1), (2, 1)),
+    ('-X', 'Z'):  ((0, -1), (2, 1),  (1, 1)),
+    ('-X', '-Z'): ((0, -1), (2, -1), (1, -1)),
+    ('Y',  'X'):  ((1, 1),  (0, 1),  (2, -1)),
+    ('Y',  '-X'): ((1, 1),  (0, -1), (2, 1)),
+    ('Y',  'Z'):  ((1, 1),  (2, 1),  (0, 1)),
+    ('Y',  '-Z'): ((1, 1),  (2, -1), (0, -1)),
+    ('-Y', 'X'):  ((1, -1), (0, 1),  (2, 1)),
+    ('-Y', '-X'): ((1, -1), (0, -1), (2, -1)),
+    ('-Y', 'Z'):  ((1, -1), (2, 1),  (0, -1)),
+    ('-Y', '-Z'): ((1, -1), (2, -1), (0, 1)),
+    ('Z',  'X'):  ((2, 1),  (0, 1),  (1, 1)),
+    ('Z',  '-X'): ((2, 1),  (0, -1), (1, -1)),
+    ('Z',  'Y'):  ((2, 1),  (1, 1),  (0, -1)),
+    ('Z',  '-Y'): ((2, 1),  (1, -1), (0, 1)),  # Blender system!
+    ('-Z', 'X'):  ((2, -1), (0, 1),  (1, -1)),
+    ('-Z', '-X'): ((2, -1), (0, -1), (1, 1)),
+    ('-Z', 'Y'):  ((2, -1), (1, 1),  (0, 1)),
+    ('-Z', '-Y'): ((2, -1), (1, -1), (0, -1)),
 }
 
 
@@ -142,64 +131,6 @@ FBX_FRAMERATES = (
 
 
 # ##### Misc utilities #####
-
-DO_PERFMON = True
-
-if DO_PERFMON:
-    class PerfMon():
-        def __init__(self):
-            self.level = -1
-            self.ref_time = []
-
-        def level_up(self, message=""):
-            self.level += 1
-            self.ref_time.append(None)
-            if message:
-                print("\t" * self.level, message, sep="")
-
-        def level_down(self, message=""):
-            if not self.ref_time:
-                if message:
-                    print(message)
-                return
-            ref_time = self.ref_time[self.level]
-            print("\t" * self.level,
-                  "\tDone (%f sec)\n" % ((time.process_time() - ref_time) if ref_time is not None else 0.0),
-                  sep="")
-            if message:
-                print("\t" * self.level, message, sep="")
-            del self.ref_time[self.level]
-            self.level -= 1
-
-        def step(self, message=""):
-            ref_time = self.ref_time[self.level]
-            curr_time = time.process_time()
-            if ref_time is not None:
-                print("\t" * self.level, "\tDone (%f sec)\n" % (curr_time - ref_time), sep="")
-            self.ref_time[self.level] = curr_time
-            print("\t" * self.level, message, sep="")
-else:
-    class PerfMon():
-        def __init__(self):
-            pass
-
-        def level_up(self, message=""):
-            pass
-
-        def level_down(self, message=""):
-            pass
-
-        def step(self, message=""):
-            pass
-
-
-# Scale/unit mess. FBX can store the 'reference' unit of a file in its UnitScaleFactor property
-# (1.0 meaning centimeter, afaik). We use that to reflect user's default unit as set in Blender with scale_length.
-# However, we always get values in BU (i.e. meters), so we have to reverse-apply that scale in global matrix...
-# Note that when no default unit is available, we assume 'meters' (and hence scale by 100).
-def units_blender_to_fbx_factor(scene):
-    return 100.0 if (scene.unit_settings.system == 'NONE') else (100.0 * scene.unit_settings.scale_length)
-
 
 # Note: this could be in a utility (math.units e.g.)...
 
@@ -275,6 +206,7 @@ def nors_transformed_gen(raw_nors, m=None):
     return gen if m is None else (m * Vector(v) for v in gen)
 
 
+'''
 # ##### UIDs code. #####
 
 # ID class (mere int).
@@ -335,6 +267,12 @@ def get_key_from_fbx_uuid(uuid):
     """
     assert(uuid.__class__ == UUID)
     return _uuids_to_keys.get(uuid, None)
+
+
+    """Return (stack/layer, ID, fbxprop, item) curve key."""
+    return "|".join((get_blender_anim_id_base(scene, ref_id), obj_key, fbx_prop_name,
+                     fbx_prop_item_name, "AnimCurve"))
+'''
 
 # ##### Element generators. #####
 
@@ -453,6 +391,7 @@ FBX_PROPERTIES_DEFINITIONS = {
     "p_color": (b"Color", b"", "add_float64", "add_float64", "add_float64"),  # Animatable-only?
     "p_string": (b"KString", b"", "add_string_unicode"),
     "p_string_url": (b"KString", b"Url", "add_string_unicode"),
+    "p_string_xrefurl": (b"KString", b"XrefUrl", "add_string_unicode"),
     "p_timestamp": (b"KTime", b"Time", "add_int64"),
     "p_datetime": (b"DateTime", b"", "add_string_unicode"),
     # Special types.
@@ -474,6 +413,40 @@ FBX_PROPERTIES_DEFINITIONS = {
     "p_fov_y": (b"FieldOfViewY", b"", "add_float64"),
 }
 
+def get_ascii_properties(properties, indent=0):
+    result = []
+    for p in properties:
+        if len(p) < 3:
+            continue
+        if len(p) == 3:
+            name, ptype, value = p
+            animatable = False
+            custom = False
+        elif len(p) == 4:
+            name, ptype, value, animatable = p
+            custom = False
+        else:
+            name, ptype, value, animatable, custom = p
+
+        result.append( indent*'    ' + get_ascii_property(name, ptype, value, animatable, custom) )
+
+    return '\n'.join(result)
+
+def get_ascii_property(name, ptype, value, animatable=False, custom=False):
+    if isinstance(value, tuple):
+        value = list(value)
+    elif not isinstance(value, list):
+        value = [value]
+
+    flags = _elem_props_flags(animatable, custom)
+    ptype = FBX_PROPERTIES_DEFINITIONS[ptype]
+
+    if len(ptype) > 2 and 'string' in ptype[2]:
+        value = ['"%s"' % v for v in value]
+    elif len(ptype) > 2 and 'int' in ptype[2]:
+        value = [int(v) for v in value]
+
+    return 'P: "%s", "%s", "%s", "%s", %s' % (name, ptype[0], ptype[1], flags, (','.join([str(v) for v in value])))
 
 def _elem_props_set(elem, ptype, name, value, flags):
     p = elem_data_single_string(elem, b"P", name)
@@ -488,35 +461,27 @@ def _elem_props_set(elem, ptype, name, value, flags):
             getattr(p, callback)(val)
 
 
-def _elem_props_flags(animatable, animated, custom):
-    # XXX: There are way more flags, see
-    #      http://help.autodesk.com/view/FBX/2015/ENU/?guid=__cpp_ref_class_fbx_property_flags_html
-    #      Unfortunately, as usual, no doc at all about their 'translation' in actual FBX file format.
-    #      Curse you-know-who.
-    if animatable:
-        if animated:
-            if custom:
-                return b"A+U"
-            return b"A+"
-        if custom:
-            return b"AU"
+def _elem_props_flags(animatable, custom):
+    if animatable and custom:
+        return b"AU"
+    elif animatable:
         return b"A"
-    if custom:
+    elif custom:
         return b"U"
     return b""
 
 
-def elem_props_set(elem, ptype, name, value=None, animatable=False, animated=False, custom=False):
+def elem_props_set(elem, ptype, name, value=None, animatable=False, custom=False):
     ptype = FBX_PROPERTIES_DEFINITIONS[ptype]
     import log
-    log.debug('propset %s %s %s', str(name), str(value), type(value))
-    _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, animated, custom))
+    log.debug('propset %s %s %s', name, value, type(value))
+    _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, custom))
 
 
 def elem_props_compound(elem, cmpd_name, custom=False):
-    def _setter(ptype, name, value, animatable=False, animated=False, custom=False):
+    def _setter(ptype, name, value, animatable=False, custom=False):
         name = cmpd_name + b"|" + name
-        elem_props_set(elem, ptype, name, value, animatable=animatable, animated=animated, custom=custom)
+        elem_props_set(elem, ptype, name, value, animatable=animatable, custom=custom)
 
     elem_props_set(elem, "p_compound", cmpd_name, custom=custom)
     return _setter
@@ -535,7 +500,7 @@ def elem_props_template_init(templates, template_type):
     return ret
 
 
-def elem_props_template_set(template, elem, ptype_name, name, value, animatable=False, animated=False):
+def elem_props_template_set(template, elem, ptype_name, name, value, animatable=False):
     """
     Only add a prop if the same value is not already defined in given template.
     Note it is important to not give iterators as value, here!
@@ -545,16 +510,15 @@ def elem_props_template_set(template, elem, ptype_name, name, value, animatable=
         value = tuple(value)
     tmpl_val, tmpl_ptype, tmpl_animatable, tmpl_written = template.get(name, (None, None, False, False))
     # Note animatable flag from template takes precedence over given one, if applicable.
-    # However, animated properties are always written, since they cannot match their template!
-    if tmpl_ptype is not None and not animated:
+    if tmpl_ptype is not None:
         if (tmpl_written and
             ((len(ptype) == 3 and (tmpl_val, tmpl_ptype) == (value, ptype_name)) or
              (len(ptype) > 3 and (tuple(tmpl_val), tmpl_ptype) == (value, ptype_name)))):
             return  # Already in template and same value.
-        _elem_props_set(elem, ptype, name, value, _elem_props_flags(tmpl_animatable, animated, False))
+        _elem_props_set(elem, ptype, name, value, _elem_props_flags(tmpl_animatable, False))
         template[name][3] = True
     else:
-        _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, animated, False))
+        _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, False))
 
 
 def elem_props_template_finalize(template, elem):
@@ -569,7 +533,7 @@ def elem_props_template_finalize(template, elem):
         if written:
             continue
         ptype = FBX_PROPERTIES_DEFINITIONS[ptype_name]
-        _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, False, False))
+        _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, False))
 
 
 # ##### Templates #####
@@ -602,113 +566,15 @@ def fbx_template_generate(definitionsNode, objectType_name, users_count, propert
         props = elem_properties(elem)
 
         for name, ptype, value, animatable, custom in get_properties(properties):
-            print(props)
-            print(ptype)
-            print(name)
-            print(value)
-            print(animatable)
-            elem_props_set(props, ptype, name, value, animatable, custom)
-            #try:
-            #
-            #except Exception as e:
-            #    import log
-            #    log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
-
-def fbx_templates_generate(root, fbx_templates):
-    # We may have to gather different templates in the same node (e.g. NodeAttribute template gathers properties
-    # for Lights, Cameras, LibNodes, etc.).
-    ref_templates = {(tmpl.type_name, tmpl.prop_type_name): tmpl for tmpl in fbx_templates.values()}
-
-    templates = OrderedDict()
-    for type_name, prop_type_name, properties, nbr_users, _written in fbx_templates.values():
-        tmpl = templates.get(type_name)
-        if tmpl is None:
-            templates[type_name] = [OrderedDict(((prop_type_name, (properties, nbr_users)),)), nbr_users]
-        else:
-            tmpl[0][prop_type_name] = (properties, nbr_users)
-            tmpl[1] += nbr_users
-
-    for type_name, (subprops, nbr_users) in templates.items():
-        template = elem_data_single_string(root, b"ObjectType", type_name)
-        elem_data_single_int32(template, b"Count", nbr_users)
-
-        if len(subprops) == 1:
-            prop_type_name, (properties, _nbr_sub_type_users) = next(iter(subprops.items()))
-            subprops = (prop_type_name, properties)
-            ref_templates[(type_name, prop_type_name)].written[0] = True
-        else:
-            # Ack! Even though this could/should work, looks like it is not supported. So we have to chose one. :|
-            max_users = max_props = -1
-            written_prop_type_name = None
-            for prop_type_name, (properties, nbr_sub_type_users) in subprops.items():
-                if nbr_sub_type_users > max_users or (nbr_sub_type_users == max_users and len(properties) > max_props):
-                    max_users = nbr_sub_type_users
-                    max_props = len(properties)
-                    written_prop_type_name = prop_type_name
-            subprops = (written_prop_type_name, properties)
-            ref_templates[(type_name, written_prop_type_name)].written[0] = True
-
-        prop_type_name, properties = subprops
-        if prop_type_name and properties:
-            elem = elem_data_single_string(template, b"PropertyTemplate", prop_type_name)
-            props = elem_properties(elem)
-            for name, (value, ptype, animatable) in properties.items():
-                try:
-                    elem_props_set(props, ptype, name, value, animatable=animatable)
-                except Exception as e:
-                    print("Failed to write template prop (%r)" % e)
-                    print(props, ptype, name, value, animatable)
+            try:
+                elem_props_set(props, ptype, name, value, animatable, custom)
+            except Exception as e:
+                import log
+                log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
 
 
-def fbx_name_class(name, cls):
+def fbx_name_class(name, cls=None):
+    if cls is None:
+        cls,name = name.split('::')
     return FBX_NAME_CLASS_SEP.join((name, cls))
 
-
-# ##### Top-level FBX data container. #####
-
-# Helper sub-container gathering all exporter settings related to media (texture files).
-FBXExportSettingsMedia = namedtuple("FBXExportSettingsMedia", (
-    "path_mode", "base_src", "base_dst", "subdir",
-    "embed_textures", "copy_set", "embedded_set",
-))
-
-# Helper container gathering all exporter settings.
-FBXExportSettings = namedtuple("FBXExportSettings", (
-    "report", "to_axes", "global_matrix", "global_scale", "apply_unit_scale", "unit_scale",
-    "bake_space_transform", "global_matrix_inv", "global_matrix_inv_transposed",
-    "context_objects", "object_types", "use_mesh_modifiers", "use_mesh_modifiers_render",
-    "mesh_smooth_type", "use_mesh_edges", "use_tspace",
-    "armature_nodetype", "use_armature_deform_only", "add_leaf_bones",
-    "bone_correction_matrix", "bone_correction_matrix_inv",
-    "bake_anim", "bake_anim_use_all_bones", "bake_anim_use_nla_strips", "bake_anim_use_all_actions",
-    "bake_anim_step", "bake_anim_simplify_factor", "bake_anim_force_startend_keying",
-    "use_metadata", "media_settings", "use_custom_props",
-))
-
-# Helper container gathering some data we need multiple times:
-#     * templates.
-#     * settings, scene.
-#     * objects.
-#     * object data.
-#     * skinning data (binding armature/mesh).
-#     * animations.
-FBXExportData = namedtuple("FBXExportData", (
-    "templates", "templates_users", "connections",
-    "settings", "scene", "objects", "animations", "animated", "frame_start", "frame_end",
-    "data_empties", "data_lamps", "data_cameras", "data_meshes", "mesh_mat_indices",
-    "data_bones", "data_leaf_bones", "data_deformers_skin", "data_deformers_shape",
-    "data_world", "data_materials", "data_textures", "data_videos",
-))
-
-# Helper container gathering all importer settings.
-FBXImportSettings = namedtuple("FBXImportSettings", (
-    "report", "to_axes", "global_matrix", "global_scale",
-    "bake_space_transform", "global_matrix_inv", "global_matrix_inv_transposed",
-    "use_custom_normals", "use_cycles", "use_image_search",
-    "use_alpha_decals", "decal_offset",
-    "use_anim", "anim_offset",
-    "use_custom_props", "use_custom_props_enum_as_string",
-    "cycles_material_wrap_map", "image_cache",
-    "ignore_leaf_bones", "force_connect_children", "automatic_bone_orientation", "bone_correction_matrix",
-    "use_prepost_rot",
-))

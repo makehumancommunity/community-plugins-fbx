@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -62,22 +62,12 @@ def writeObjectDefs(fp, meshes, nShapes, config):
     ]
 
     if config.binary:
-
-        properties = [
-            (b"Color", ((0.8, 0.8, 0.8), "p_color_rgb", False)),
-            (b"BBoxMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"BBoxMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"Primary Visibility", (True, "p_bool", False)),
-            (b"Casts Shadows", (True, "p_bool", False)),
-            (b"Receive Shadows", (True, "p_bool", False))
-        ]
-
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Definitions')
-        fbx_binary.fbx_template_generate(elem, b"Geometry", (nMeshes + nShapes), b"FbxMesh", properties)
+        elem = fbx_binary.get_child_element(fp, 'Definitions')
+        fbx_binary.fbx_template_generate(elem, "Geometry", (nMeshes + nShapes), "FbxMesh", properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
 '    ObjectType: "Geometry" {\n' +
 '       Count: %d' % (nMeshes + nShapes) +
@@ -112,12 +102,8 @@ def writeGeometryProp(fp, mesh, config):
     ]
 
     if config.binary:
-        key = key.encode('utf-8')
-        properties = [
-            (b"MHName", b"p_string", b"%sMesh" % bytes(mesh.name,encoding='utf-8'), False, True)
-        ]
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_mesh_element(elem, key, id, properties, coord, mesh.fvert, mesh.vnorm, mesh.texco, mesh.fuvs)
         return
 
@@ -127,7 +113,7 @@ def writeGeometryProp(fp, mesh, config):
     else:
         indexString = ",".join( ['%d,%d,%d' % (fv[0],fv[1],-1-fv[2]) for fv in mesh.fvert] )
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
         '    Geometry: %d, "%s", "Mesh" {\n' % (id, key) +
         '        Properties70:  {\n' +
@@ -247,9 +233,9 @@ def writeUvs2(fp, mesh):
         uvString.append(",".join( ['%.4f,%.4f' % (tuple(mesh.texco[vt])) for vt in fuv] ))
     uvString = ",".join(uvString)
     if mesh.vertsPerPrimitive == 4:
-        indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in range(nUvFaces)] )
+        indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in xrange(nUvFaces)] )
     else:
-        indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in range(nUvFaces)] )
+        indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in xrange(nUvFaces)] )
 
     fp.write(
         '        LayerElementUV: 0 {\n' +
@@ -282,20 +268,12 @@ def writeMeshProp(fp, mesh, config):
     ]
 
     if config.binary:
-        properties = [
-            (b"RotationActive", b"p_bool", 1),
-            (b"InheritType", b"p_enum", 1),
-            (b"ScalingMax", b"p_vector_3d", [0, 0, 0]),
-            (b"DefaultAttributeIndex", b"p_integer", 0),
-            (b"MHName", b"p_string", mesh.name, False, True)
-        ]
-        key = key.encode()
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_model_element(elem, key, id, properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
 '    Model: %d, "%s", "Mesh" {' % (id, key) +
 """

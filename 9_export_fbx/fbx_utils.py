@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -137,7 +137,7 @@ def ooLink(fp, child, parent, config):
     pid,_ = getId(parent)
 
     if config.binary:
-        from . import fbx_binary
+        import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Connections')
         fbx_binary.elem_connection(elem, b"OO", cid, pid)
         return
@@ -153,7 +153,7 @@ def opLink(fp, child, parent, channel, config):
     pid,_ = getId(parent)
 
     if config.binary:
-        from . import fbx_binary
+        import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Connections')
         fbx_binary.elem_connection(elem, b"OP", cid, pid, channel)
         return

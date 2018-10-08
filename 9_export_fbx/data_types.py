@@ -16,10 +16,9 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# <pep8 compliant>
-
 # Script copyright (C) 2006-2012, assimp team
 # Script copyright (C) 2013 Blender Foundation
+# Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
 
 BOOL = b'C'[0]
 INT16 = b'Y'[0]
@@ -36,10 +35,6 @@ FLOAT64_ARRAY = b'd'[0]
 BOOL_ARRAY = b'b'[0]
 BYTE_ARRAY = b'c'[0]
 
-# Some other misc defines
-# Known combinations so far - supposed meaning: A = animatable, A+ = animated, U = UserProp
-# VALID_NUMBER_FLAGS = {b'A', b'A+', b'AU', b'A+U'}  # Not used...
-
 # array types - actual length may vary (depending on underlying C implementation)!
 import array
 
@@ -49,7 +44,7 @@ ARRAY_BYTE = 'B'
 
 ARRAY_INT32 = None
 ARRAY_INT64 = None
-for _t in 'ilq':
+for _t in 'il':  # typecode 'q' (signed long long) is only supported since python 3.3
     size = array.array(_t).itemsize
     if size == 4:
         ARRAY_INT32 = _t
@@ -60,7 +55,10 @@ for _t in 'ilq':
 if not ARRAY_INT32:
     raise Exception("Impossible to get a 4-bytes integer type for array!")
 if not ARRAY_INT64:
-    raise Exception("Impossible to get an 8-bytes integer type for array!")
+    # In python 2 we have no 64bit int type (long long). We will use a 32bit integer (we don't need such large index space anyway).
+    # However, it's possible to struct.pack this value as a 64bit int as 'q' type is available there.
+    #raise Exception("Impossible to get an 8-bytes integer type for array!")
+    ARRAY_INT64 = 'q'
 
 ARRAY_FLOAT32 = None
 ARRAY_FLOAT64 = None

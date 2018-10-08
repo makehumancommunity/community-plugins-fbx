@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -83,14 +83,14 @@ def writeObjectDefs(fp, action, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Definitions')
+        elem = fbx_binary.get_child_element(fp, 'Definitions')
         fbx_binary.fbx_template_generate(elem, "AnimationStack", 1, "FbxAnimStack", properties_stack)
         fbx_binary.fbx_template_generate(elem, "AnimationLayer", 1, "FbxAnimLayer", properties_layer)
         fbx_binary.fbx_template_generate(elem, "AnimationCurveNode", ncurves, "FbxAnimCurveNode", properties_curvenode)
         fbx_binary.fbx_template_generate(elem, "AnimationCurve", 3*ncurves)
         return
 
-    from . import fbx_utils
+    import fbx_utils
 
     fp.write(
 """
@@ -250,7 +250,7 @@ def writeLinks(fp, action, config):
 
 def writeTakes(fp, action, config):
     if config.binary:
-        from . import fbx_binary
+        import fbx_binary
         fbx_binary.fbx_takes_element(fp)
         return
 
@@ -264,7 +264,7 @@ Takes:  {
 """)
 
     if action:
-        npoints = len(list(action.values())[0])
+        npoints = len(action.values()[0])
         fp.write(
             '   Take: "Take_001" {\n' +
             '       FileName: "Take_001.tak"\n' +

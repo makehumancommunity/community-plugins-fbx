@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -84,7 +84,7 @@ def writeObjectDefs(fp, meshes, skel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Definitions')
+        elem = fbx_binary.get_child_element(fp, 'Definitions')
         if count > 0:
             fbx_binary.fbx_template_generate(elem, "Deformer", count)
         if skel:
@@ -198,17 +198,12 @@ def writeDeformer(fp, name, config):
     ]
 
     if config.binary:
-
-        properties = [
-            (b"MHName", b"p_string", b"%sSkin" % name.encode('utf-8'), False, True)
-        ]
-
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_deformer(elem, key, id, properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
 
     fp.write(
 '    Deformer: %d, "%s", "Skin" {' % (id, key) +
@@ -229,7 +224,7 @@ def writeSubDeformer(fp, name, bone, weights, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_subdeformer(elem, key, id, weights[0], weights[1], bindmat, bindinv)
         return
 
@@ -265,7 +260,7 @@ def writeBindPose(fp, meshes, skel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         pelem = fbx_binary.fbx_data_bindpose_element(elem, key, id, count)
     else:
         fp.write(
@@ -278,14 +273,12 @@ def writeBindPose(fp, meshes, skel, config):
 
     key = "Model::%s" % skel.name
     if config.binary:
-        from . import fbx_binary
         id,_ = getId(key)
         fbx_binary.fbx_data_pose_node_element(pelem, key, id, skelbindmat)
     else:
         poseNode(fp, key, skelbindmat)
 
     for mesh in meshes:
-        from . import fbx_binary
         key = "Model::%sMesh" % mesh.name
         if config.binary:
             id,_ = getId(key)
@@ -297,7 +290,6 @@ def writeBindPose(fp, meshes, skel, config):
         key = "Model::%s" % bone.name
         bindmat,_ = bone.getBindMatrix(config.offset)
         if config.binary:
-            from . import fbx_binary
             id,_ = getId(key)
             fbx_binary.fbx_data_pose_node_element(pelem, key, id, bindmat)
         else:

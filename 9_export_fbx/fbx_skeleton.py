@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -141,97 +141,15 @@ def writeObjectDefs(fp, meshes, skel, config):
     ]
 
     if config.binary:
-
-        properties = [
-            # Name,                   Value, Type, Animatable
-            (b"QuaternionInterpolate", (0, "p_enum", False)),  # 0 = no quat interpolation.
-            (b"RotationOffset", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"RotationPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"ScalingOffset", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"ScalingPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"TranslationActive", (False, "p_bool", False)),
-            (b"TranslationMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"TranslationMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"TranslationMinX", (False, "p_bool", False)),
-            (b"TranslationMinY", (False, "p_bool", False)),
-            (b"TranslationMinZ", (False, "p_bool", False)),
-            (b"TranslationMaxX", (False, "p_bool", False)),
-            (b"TranslationMaxY", (False, "p_bool", False)),
-            (b"TranslationMaxZ", (False, "p_bool", False)),
-            (b"RotationOrder", (0, "p_enum", False)),  # we always use 'XYZ' order.
-            (b"RotationSpaceForLimitOnly", (False, "p_bool", False)),
-            (b"RotationStiffnessX", (0.0, "p_double", False)),
-            (b"RotationStiffnessY", (0.0, "p_double", False)),
-            (b"RotationStiffnessZ", (0.0, "p_double", False)),
-            (b"AxisLen", (10.0, "p_double", False)),
-            (b"PreRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"PostRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"RotationActive", (False, "p_bool", False)),
-            (b"RotationMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"RotationMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"RotationMinX", (False, "p_bool", False)),
-            (b"RotationMinY", (False, "p_bool", False)),
-            (b"RotationMinZ", (False, "p_bool", False)),
-            (b"RotationMaxX", (False, "p_bool", False)),
-            (b"RotationMaxY", (False, "p_bool", False)),
-            (b"RotationMaxZ", (False, "p_bool", False)),
-            (b"InheritType", (0, "p_enum", False)),  # RrSs
-            (b"ScalingActive", (False, "p_bool", False)),
-            (b"ScalingMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"ScalingMax", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
-            (b"ScalingMinX", (False, "p_bool", False)),
-            (b"ScalingMinY", (False, "p_bool", False)),
-            (b"ScalingMinZ", (False, "p_bool", False)),
-            (b"ScalingMaxX", (False, "p_bool", False)),
-            (b"ScalingMaxY", (False, "p_bool", False)),
-            (b"ScalingMaxZ", (False, "p_bool", False)),
-            (b"GeometricTranslation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"GeometricRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
-            (b"GeometricScaling", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
-            (b"MinDampRangeX", (0.0, "p_double", False)),
-            (b"MinDampRangeY", (0.0, "p_double", False)),
-            (b"MinDampRangeZ", (0.0, "p_double", False)),
-            (b"MaxDampRangeX", (0.0, "p_double", False)),
-            (b"MaxDampRangeY", (0.0, "p_double", False)),
-            (b"MaxDampRangeZ", (0.0, "p_double", False)),
-            (b"MinDampStrengthX", (0.0, "p_double", False)),
-            (b"MinDampStrengthY", (0.0, "p_double", False)),
-            (b"MinDampStrengthZ", (0.0, "p_double", False)),
-            (b"MaxDampStrengthX", (0.0, "p_double", False)),
-            (b"MaxDampStrengthY", (0.0, "p_double", False)),
-            (b"MaxDampStrengthZ", (0.0, "p_double", False)),
-            (b"PreferedAngleX", (0.0, "p_double", False)),
-            (b"PreferedAngleY", (0.0, "p_double", False)),
-            (b"PreferedAngleZ", (0.0, "p_double", False)),
-            (b"LookAtProperty", (None, "p_object", False)),
-            (b"UpVectorProperty", (None, "p_object", False)),
-            (b"Show", (True, "p_bool", False)),
-            (b"NegativePercentShapeSupport", (True, "p_bool", False)),
-            (b"DefaultAttributeIndex", (-1, "p_integer", False)),
-            (b"Freeze", (False, "p_bool", False)),
-            (b"LODBox", (False, "p_bool", False)),
-            (b"Lcl Translation", ((0.0, 0.0, 0.0), "p_lcl_translation", True)),
-            (b"Lcl Rotation", ((0.0, 0.0, 0.0), "p_lcl_rotation", True)),
-            (b"Lcl Scaling", ((1.0, 1.0, 1.0), "p_lcl_scaling", True)),
-            (b"Visibility", (1.0, "p_visibility", True)),
-            (b"Visibility Inheritance", (1, "p_visibility_inheritance", False)),
-        ]
-
-        skel_properties = [
-            (b"Color", b"p_color_rgb", [0.8, 0.8, 0.8]),
-            (b"Size", b"p_double", 100),
-            (b"LimbLength", b"p_double", 1)  # TODO this property had special "H" flag, is this required?
-        ]
-
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Definitions')
-        fbx_binary.fbx_template_generate(elem, b"Model", nModels, b"FbxNode", properties)
+        elem = fbx_binary.get_child_element(fp, 'Definitions')
+        fbx_binary.fbx_template_generate(elem, "Model", nModels, "FbxNode", properties)
 
         if skel:
-            fbx_binary.fbx_template_generate(elem, b"NodeAttribute", nBones, b"FbxSkeleton", skel_properties)
+            fbx_binary.fbx_template_generate(elem, "NodeAttribute", nBones, "FbxSkeleton", skel_properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
 """
     ObjectType: "Model" {
@@ -283,16 +201,12 @@ def writeNodeAttributeProp(fp, bone, config):
     ]
 
     if config.binary:
-        properties = [
-            (b"Size", b"p_double", 1),
-            (b"LimbLength", b"p_double", bone.length)  # TODO what to do with "H" flag?
-        ]
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_skeleton_bone_node(elem, key, id, properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
 '    NodeAttribute: %d, "%s", "LimbNode" {' % (id, key) + """
         Properties70:  {
@@ -314,20 +228,12 @@ def writeNodeProp(fp, skel, config):
     ]
 
     if config.binary:
-
-        properties = [
-            (b"RotationActive", b"p_bool", 1),
-            (b"InheritType", b"p_enum", 1),
-            (b"ScalingMax", b"p_vector_3d", [0, 0, 0]),
-            (b"MHName", b"p_string", skel.name, False, True)
-        ]
-
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_skeleton_model(elem, key, id, properties)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     fp.write(
 '    Model: %d, "%s", "Null" {' % (id, key) +
 """
@@ -342,7 +248,7 @@ def writeNodeProp(fp, skel, config):
 
 
 def writeBoneProp(fp, bone, config):
-    from . import fbx_utils
+    import fbx_utils
     id,key = getId("Model::%s" % bone.name)
 
     mat = bone.getRelativeMatrix(config.meshOrientation, config.localBoneAxis, config.offset)
@@ -361,20 +267,8 @@ def writeBoneProp(fp, bone, config):
     ]
 
     if config.binary:
-
-        properties = [
-            (b"RotationActive", b"p_bool", 1),
-            (b"InheritType", b"p_enum", 1),
-            (b"ScalingMax", b"p_vector_3d", [0, 0, 0]),
-            (b"DefaultAttributeIndex", b"p_integer", 0),
-            (b"Lcl Translation", b"p_lcl_translation", list(trans), True),
-            (b"Lcl Rotation", b"p_lcl_rotation", [e[0] * R, e[1] * R, e[2] * R], True),
-            (b"Lcl Scaling", b"p_lcl_scaling", [1, 1, 1], True),
-            (b"MHName", b"p_string", bone.name, False, True),
-        ]
-
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, b'Objects')
+        elem = fbx_binary.get_child_element(fp, 'Objects')
         fbx_binary.fbx_data_skeleton_bone_model(elem, key, id, properties)
         return
 

@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 
 """
 **Project Name:**      MakeHuman
 
-**Product Home Page:** http://www.makehumancommunity.org/
+**Product Home Page:** http://www.makehuman.org/
 
 **Code Home Page:**    https://bitbucket.org/MakeHuman/makehuman/
 
@@ -14,7 +14,7 @@
 
 **Licensing:**         AGPL3
 
-    This file is part of MakeHuman (www.makehumancommunity.org).
+    This file is part of MakeHuman (www.makehuman.org).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -52,19 +52,18 @@ def writeHeader(fp, filepath, config):
         from . import fbx_binary
         import os
         root = fp
-        #fbx_binary.fbx_header_elements(root, config, filepath, today)
-        fbx_binary.fbx_header_elements(root, None, today)
+        fbx_binary.fbx_header_elements(root, config, filepath, today)
         name = os.path.splitext(os.path.basename(filepath))[0]
-        fbx_binary.fbx_documents_elements(root, None, name)
+        fbx_binary.fbx_documents_elements(root, name, id)
         fbx_binary.fbx_references_elements(root)
         return
 
-    from . import fbx_utils
+    import fbx_utils
     mesh_orientation = fbx_utils.getMeshOrientation(config)
     up_axis, front_axis, coord_axis = fbx_utils.RIGHT_HAND_AXES[mesh_orientation]
 
     fp.write("""; FBX 7.3.0 project file
-; Exported from MakeHuman TM (www.makehumancommunity.org)
+; Exported from MakeHuman TM (www.makehuman.org)
 ; ----------------------------------------------------
 
 FBXHeaderExtension:  {
@@ -92,7 +91,7 @@ FBXHeaderExtension:  {
             Version: 100
             Title: ""
             Subject: ""
-            Author: "www.makehumancommunity.org"
+            Author: "www.makehuman.org"
             Keywords: ""
             Revision: ""
             Comment: ""
