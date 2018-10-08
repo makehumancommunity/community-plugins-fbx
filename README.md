@@ -17,4 +17,9 @@ changes against blender's code)
 * 2014-03-19: Blender 2.70 released
 * 2013-10-31: Blender 2.69 released
 
+... However, the structure of the FBX directory is vastly different in both blender 2.70 and blender 2.69. This leads me to assume
+that the code was not taken from a bundled FBX at the time. Rather there must've been an outside source of the code. 
+
+The first blender release with a similar code structure is 2.71. We'll use that for comparisons.
+
 
