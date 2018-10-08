@@ -25,7 +25,7 @@ The first blender release with a similar code structure is 2.71. We'll use that 
 ## File mappings
 
 The MH code has been refactored into files with different names than the blender ones. This is a map of which MH code files
-map onto which blender ones. 
+map onto which blender ones, and to what extent.
 
 ### data_types.py
 
@@ -44,6 +44,54 @@ lines 443-470 blender side for 2.71, and 474-501 for 2.79.
 
 Large parts of this file matches blender's export_fbx_bin.py, but there are also huge differences. 
 
+Functions that exist in blender but not in mh:
+
+* check_skip_material.py
+* defaults_unity3d.py
+* fbx_animations_do.py
+* fbx_animations.py
+* fbx_connections_elements.py
+* fbx_data_animation_elements.py
+* fbx_data_armature_elements.py
+* fbx_data_camera_elements.py
+* fbx_data_empty_elements.py
+* fbx_data_from_scene.py
+* fbx_data_lamp_elements.py
+* fbx_data_leaf_bone_elements.py
+* fbx_data_material_elements.py
+* fbx_data_mesh_elements.py
+* fbx_data_mesh_shapes_elements.py
+* fbx_data_object_elements.py
+* fbx_data_texture_file_elements.py
+* fbx_data_video_elements.py
+* fbx_generate_leaf_bones.py
+* fbx_mat_properties_from_texture.py
+* fbx_objects_elements.py
+* fbx_scene_data_cleanup.py
+* fbx_skeleton_from_armature.py
+* fbx_takes_elements.py
+* fbx_template_def_camera.py
+* fbx_template_def_light.py
+* fbx_template_def_model.py
+* fbx_template_def_video.py
+* _gen_vid_path.py
+* save.py
+* save_single.py
+
+Functions that exist in mh but not in blender:
+
+* fbx_connections_element.py
+* fbx_data_deformer.py
+* fbx_data_material.py
+* fbx_data_mesh_element.py
+* fbx_data_model_element.py
+* fbx_data_pose_node_element.py
+* fbx_data_skeleton_bone_model.py
+* fbx_data_skeleton_bone_node.py
+* fbx_data_skeleton_model.py
+* fbx_data_subdeformer.py
+* fbx_data_texture_file_element.py
+* fbx_takes_element.py
 
 ### fbx_deformer.py
 
@@ -62,5 +110,8 @@ Large parts of this file matches blender's export_fbx_bin.py, but there are also
 ### __init__.py
 
 ### mh2fbx.py
+
+
+
 
 
