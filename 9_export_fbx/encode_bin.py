@@ -119,6 +119,8 @@ class FBXElem:
         self.props.append(data)
 
     def add_string(self, data):
+        log.debug(data)
+        log.debug(type(data))
         assert(isinstance(data, bytes))
         data = pack('<I', len(data)) + data
 

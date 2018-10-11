@@ -260,10 +260,15 @@ def fbx_data_pose_node_element(bindposeParent, key, id, bindmat):
 
 def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnorm, texco, fuv):
     geom = elem_data_single_int64(objectsParent, b"Geometry", id)  #get_fbx_uuid_from_key(key))
-    geom.add_string(fbx_name_class(key.encode()))
+    log.debug("---KEY---")
+    log.debug(key)
+    log.debug(type(key))
+    res = key.encode()
+    log.debug(type(res))
+    geom.add_string(fbx_name_class(res))
     geom.add_string(b"Mesh")
 
-    name = key.split('::')[1]
+    name = res.split(b'::')[1]
 
     props = elem_properties(geom)
 

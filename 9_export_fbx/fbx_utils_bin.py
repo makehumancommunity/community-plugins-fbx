@@ -24,12 +24,9 @@
 
 
 import math
-
+import log
 from collections import namedtuple, OrderedDict
-
-
 from . import encode_bin, data_types
-
 
 # "Constants"
 FBX_VERSION = 7300
@@ -285,7 +282,15 @@ def elem_empty(elem, name):
 
 
 def _elem_data_single(elem, name, value, func_name):
+    log.debug(elem)
+    log.debug(type(elem))
+    log.debug(name)
+    log.debug(type(name))
+    log.debug(value)
+    log.debug(type(value))
     sub_elem = elem_empty(elem, name)
+    log.debug(sub_elem)
+    log.debug(type(sub_elem))
     getattr(sub_elem, func_name)(value)
     return sub_elem
 
@@ -575,6 +580,11 @@ def fbx_template_generate(definitionsNode, objectType_name, users_count, propert
 
 def fbx_name_class(name, cls=None):
     if cls is None:
-        cls,name = name.split('::')
+        cls,name = name.split(b'::')
+    log.debug(cls)
+    log.debug(type(cls))
+    log.debug(name)
+    log.debug(type(name))
+    log.debug(type(FBX_NAME_CLASS_SEP))
     return FBX_NAME_CLASS_SEP.join((name, cls))
 
