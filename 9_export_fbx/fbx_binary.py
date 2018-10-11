@@ -307,7 +307,7 @@ def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnor
 
     lay_nor = elem_data_single_int32(geom, b"LayerElementNormal", 0)
     elem_data_single_int32(lay_nor, b"Version", FBX_GEOMETRY_NORMAL_VERSION)
-    elem_data_single_string(lay_nor, b"Name", (name+"_Normal").encode())
+    elem_data_single_string(lay_nor, b"Name", name+b"_Normal")
     elem_data_single_string(lay_nor, b"MappingInformationType", b"ByPolygonVertex")
     elem_data_single_string(lay_nor, b"ReferenceInformationType", b"IndexToDirect")
 
@@ -390,7 +390,7 @@ def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnor
     uvindex = 0
     lay_uv = elem_data_single_int32(geom, b"LayerElementUV", uvindex)
     elem_data_single_int32(lay_uv, b"Version", FBX_GEOMETRY_UV_VERSION)
-    elem_data_single_string_unicode(lay_uv, b"Name", (name+"_UV").encode())
+    elem_data_single_string_unicode(lay_uv, b"Name", str(name+b"_UV"))
     elem_data_single_string(lay_uv, b"MappingInformationType", b"ByPolygonVertex")
     elem_data_single_string(lay_uv, b"ReferenceInformationType", b"IndexToDirect")
 
@@ -404,7 +404,7 @@ def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnor
     # Face's materials.
     lay_mat = elem_data_single_int32(geom, b"LayerElementMaterial", 0)
     elem_data_single_int32(lay_mat, b"Version", FBX_GEOMETRY_MATERIAL_VERSION)
-    elem_data_single_string(lay_mat, b"Name", (name+"_Material").encode())
+    elem_data_single_string(lay_mat, b"Name", name+b"_Material")
 
     elem_data_single_string(lay_mat, b"MappingInformationType", b"AllSame")
     elem_data_single_string(lay_mat, b"ReferenceInformationType", b"IndexToDirect")
@@ -413,7 +413,7 @@ def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnor
     # Face's textures -perhaps obsolete.
     lay_tex = elem_data_single_int32(geom, b"LayerElementTexture", 0)
     elem_data_single_int32(lay_tex, b"Version", 101)
-    elem_data_single_string(lay_tex, b"Name", (name+"_Texture").encode())
+    elem_data_single_string(lay_tex, b"Name", name+b"_Texture")
 
     elem_data_single_string(lay_tex, b"MappingInformationType", b"ByPolygonVertex")
     elem_data_single_string(lay_tex, b"ReferenceInformationType", b"IndexToDirect")
@@ -472,21 +472,29 @@ def fbx_data_model_element(objectsParent, key, id, properties):
     for pname, ptype, value, animatable, custom in get_properties(properties):
         elem_props_set(props, ptype, pname, value, animatable, custom)
 
-    elem_data_single_string(mod, b"Shading", "Y")
-    elem_data_single_string(mod, b"Culling", "CullingOff")
+    elem_data_single_string(mod, b"Shading", b"Y")
+    elem_data_single_string(mod, b"Culling", b"CullingOff")
 
 
 def fbx_data_material(objectsParent, key, id, properties):
     fbx_mat = elem_data_single_int64(objectsParent, b"Material", id)
+    log.debug(key)
+    log.debug(type(key))
     fbx_mat.add_string(fbx_name_class(key))
     fbx_mat.add_string(b"")
 
     elem_data_single_int32(fbx_mat, b"Version", 102)
-    elem_data_single_string(fbx_mat, b"ShadingModel", "phong")
+    elem_data_single_string(fbx_mat, b"ShadingModel", b"phong")
     elem_data_single_int32(fbx_mat, b"MultiLayer", 0)
 
     props = elem_properties(fbx_mat)
     for pname, ptype, value, animatable, custom in get_properties(properties):
+        log.debug("--- fbx_data_material -> get_properties ---")
+        log.debug(pname)
+        log.debug(ptype)
+        log.debug(value)
+        log.debug(animatable)
+        log.debug(custom)
         elem_props_set(props, ptype, pname, value, animatable, custom)
 
 
@@ -518,13 +526,13 @@ def fbx_data_texture_file_element(objectsParent, key, id, video_key, video_id, t
     elem_data_single_string(fbx_tex, b"Type", b"TextureVideoClip")
     elem_data_single_int32(fbx_tex, b"Version", FBX_TEXTURE_VERSION)
     elem_data_single_string(fbx_tex, b"TextureName", fbx_name_class(key.encode()))
-    elem_data_single_string(fbx_tex, b"Media", video_key)
-    elem_data_single_string_unicode(fbx_tex, b"Filename", texpath)
-    elem_data_single_string_unicode(fbx_tex, b"RelativeFilename", texpath_rel)
+    elem_data_single_string(fbx_tex, b"Media", bytes(video_key, 'utf-8'))
+    elem_data_single_string_unicode(fbx_tex, b"Filename", str(texpath))
+    elem_data_single_string_unicode(fbx_tex, b"RelativeFilename", str(texpath_rel))
 
-    elem_data_single_float32_array(fbx_tex, b"ModelUVTranslation", [0,0])
-    elem_data_single_float32_array(fbx_tex, b"ModelUVScaling", [1,1])
-    elem_data_single_string(fbx_tex, b"Texture_Alpha_Source", "None")
+    elem_data_single_float32_array(fbx_tex, b"ModelUVTranslation", [0.0,0.0])
+    elem_data_single_float32_array(fbx_tex, b"ModelUVScaling", [1.0,1.0])
+    elem_data_single_string(fbx_tex, b"Texture_Alpha_Source", b"None")
     elem_data_single_int32_array(fbx_tex, b"Cropping", [0,0,0,0])
 
     props = elem_properties(fbx_tex)
