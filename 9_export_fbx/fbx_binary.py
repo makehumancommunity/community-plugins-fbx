@@ -709,7 +709,7 @@ def fbx_header_elements(root, config, filepath, time=None):
     up_axis, front_axis, coord_axis = RIGHT_HAND_AXES[mesh_orientation]
     # Currently not sure about that, but looks like default unit of FBX is cm...
     #scale_factor = 10.0/config.scale  # MH scales the mesh coordinates, the scale factor is a constant
-    scale_factor = 10
+    scale_factor = 10.0
     elem_props_set(props, "p_integer", b"UpAxis", up_axis[0])
     elem_props_set(props, "p_integer", b"UpAxisSign", up_axis[1])
     elem_props_set(props, "p_integer", b"FrontAxis", front_axis[0])
@@ -727,7 +727,7 @@ def fbx_header_elements(root, config, filepath, time=None):
     elem_props_set(props, "p_enum", b"TimeMode", 0)
     elem_props_set(props, "p_timestamp", b"TimeSpanStart", 0)
     elem_props_set(props, "p_timestamp", b"TimeSpanStop", 46186158000)
-    elem_props_set(props, "p_double", b"CustomFrameRate", -1)
+    elem_props_set(props, "p_double", b"CustomFrameRate", -1.0)
 
     # ##### End of GlobalSettings element.
 
