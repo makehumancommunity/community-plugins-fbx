@@ -250,7 +250,7 @@ def writeLinks(fp, action, config):
 
 def writeTakes(fp, action, config):
     if config.binary:
-        import fbx_binary
+        from . import fbx_binary
         fbx_binary.fbx_takes_element(fp)
         return
 

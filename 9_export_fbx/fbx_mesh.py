@@ -113,7 +113,7 @@ def writeGeometryProp(fp, mesh, config):
     else:
         indexString = ",".join( ['%d,%d,%d' % (fv[0],fv[1],-1-fv[2]) for fv in mesh.fvert] )
 
-    import fbx_utils
+    from . import fbx_utils
     fp.write(
         '    Geometry: %d, "%s", "Mesh" {\n' % (id, key) +
         '        Properties70:  {\n' +
