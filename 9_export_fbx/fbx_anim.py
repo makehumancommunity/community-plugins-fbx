@@ -90,7 +90,7 @@ def writeObjectDefs(fp, action, config):
         fbx_binary.fbx_template_generate(elem, "AnimationCurve", 3*ncurves)
         return
 
-    import fbx_utils
+    from . import fbx_utils
 
     fp.write(
 """

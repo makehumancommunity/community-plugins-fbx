@@ -58,7 +58,7 @@ def writeHeader(fp, filepath, config):
         fbx_binary.fbx_references_elements(root)
         return
 
-    import fbx_utils
+    from . import fbx_utils
     mesh_orientation = fbx_utils.getMeshOrientation(config)
     up_axis, front_axis, coord_axis = fbx_utils.RIGHT_HAND_AXES[mesh_orientation]
 

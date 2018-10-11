@@ -67,7 +67,7 @@ def writeObjectDefs(fp, meshes, nShapes, config):
         fbx_binary.fbx_template_generate(elem, "Geometry", (nMeshes + nShapes), "FbxMesh", properties)
         return
 
-    import fbx_utils
+    from . import fbx_utils
     fp.write(
 '    ObjectType: "Geometry" {\n' +
 '       Count: %d' % (nMeshes + nShapes) +
@@ -273,7 +273,7 @@ def writeMeshProp(fp, mesh, config):
         fbx_binary.fbx_data_model_element(elem, key, id, properties)
         return
 
-    import fbx_utils
+    from . import fbx_utils
     fp.write(
 '    Model: %d, "%s", "Mesh" {' % (id, key) +
 """
