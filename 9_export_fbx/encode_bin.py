@@ -105,6 +105,9 @@ class FBXElem:
         self.props.append(data)
 
     def add_float64(self, data):
+        log.debug("--add_float64--")
+        log.debug(data)
+        log.debug(type(data))
         assert(isinstance(data, float))
         data = pack('<d', data)
 
@@ -119,6 +122,7 @@ class FBXElem:
         self.props.append(data)
 
     def add_string(self, data):
+        log.debug("--add_string--")
         log.debug(data)
         log.debug(type(data))
         assert(isinstance(data, bytes))
@@ -294,7 +298,7 @@ def write(fn, elem_root, version=None):
     assert(elem_root.id == b'')
 
     if version is None:
-        import fbx_utils
+        from . import fbx_utils
         version = fbx_utils.FBX_VERSION
 
     with open(fn, 'wb') as f:
