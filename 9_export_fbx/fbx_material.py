@@ -269,11 +269,11 @@ def writeTexture(fp, filepath, channel, config):
     tid,tkey = getId("Texture::%s" % texname)
 
     properties_vid = [
-        ("Path", "p_string_url", filepath)
+        (b"Path", "p_string_url", filepath)
     ]
 
     properties_tex = [
-        ("MHName", "p_string", tkey, False, True)
+        (b"MHName", "p_string", tkey, False, True)
     ]
 
     if config.binary:

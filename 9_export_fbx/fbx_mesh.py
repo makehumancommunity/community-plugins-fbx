@@ -98,7 +98,7 @@ def writeGeometryProp(fp, mesh, config):
     coord = mesh.coord + config.offset
 
     properties = [
-        ("MHName", "p_string", "%sMesh" % mesh.name, False, True)
+        (b"MHName", "p_string", "%sMesh" % mesh.name, False, True)
     ]
 
     if config.binary:
@@ -260,11 +260,11 @@ def writeMeshProp(fp, mesh, config):
     id,key = getId("Model::%sMesh" % mesh.name)
 
     properties = [
-        ("RotationActive", "p_bool", 1),
-        ("InheritType", "p_enum", 1),
-        ("ScalingMax", "p_vector_3d", [0,0,0]),
-        ("DefaultAttributeIndex", "p_integer", 0),
-        ("MHName", "p_string", mesh.name, False, True)
+        (b"RotationActive", "p_bool", 1),
+        (b"InheritType", "p_enum", 1),
+        (b"ScalingMax", "p_vector_3d", [0,0,0]),
+        (b"DefaultAttributeIndex", "p_integer", 0),
+        (b"MHName", "p_string", mesh.name, False, True)
     ]
 
     if config.binary:

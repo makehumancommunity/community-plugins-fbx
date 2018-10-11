@@ -194,7 +194,7 @@ def writeDeformer(fp, name, config):
     id,key = getId("Deformer::%s" % name)
 
     properties = [
-        ("MHName", "p_string", "%sSkin" % name, False, True)
+        (b"MHName", "p_string", "%sSkin" % name, False, True)
     ]
 
     if config.binary:

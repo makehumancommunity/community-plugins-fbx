@@ -221,10 +221,10 @@ def writeNodeProp(fp, skel, config):
     id,key = getId("Model::%s" % skel.name)
 
     properties = [
-        ("RotationActive",  "p_bool",       1),
-        ("InheritType",     "p_enum",       1),
-        ("ScalingMax",      "p_vector_3d",  [0,0,0]),
-        ("MHName",          "p_string",     skel.name, False, True)
+        (b"RotationActive",  "p_bool",       1),
+        (b"InheritType",     "p_enum",       1),
+        (b"ScalingMax",      "p_vector_3d",  [0,0,0]),
+        (b"MHName",          "p_string",     skel.name, False, True)
     ]
 
     if config.binary:
@@ -256,14 +256,14 @@ def writeBoneProp(fp, bone, config):
     e = tm.euler_from_matrix(mat, axes='sxyz')
 
     properties = [
-        ("RotationActive",  "p_bool",       1),
-        ("InheritType",     "p_enum",       1),
-        ("ScalingMax",      "p_vector_3d",  [0,0,0]),
-        ("DefaultAttributeIndex", "p_integer",  0),
-        ("Lcl Translation", "p_lcl_translation", list(trans), True),
-        ("Lcl Rotation",    "p_lcl_rotation", [e[0]*R, e[1]*R, e[2]*R], True),
-        ("Lcl Scaling",     "p_lcl_scaling",  [1,1,1], True),
-        ("MHName",          "p_string",     bone.name, False, True),
+        (b"RotationActive",  "p_bool",       1),
+        (b"InheritType",     "p_enum",       1),
+        (b"ScalingMax",      "p_vector_3d",  [0,0,0]),
+        (b"DefaultAttributeIndex", "p_integer",  0),
+        (b"Lcl Translation", "p_lcl_translation", list(trans), True),
+        (b"Lcl Rotation",    "p_lcl_rotation", [e[0]*R, e[1]*R, e[2]*R], True),
+        (b"Lcl Scaling",     "p_lcl_scaling",  [1,1,1], True),
+        (b"MHName",          "p_string",     bone.name, False, True),
     ]
 
     if config.binary:
