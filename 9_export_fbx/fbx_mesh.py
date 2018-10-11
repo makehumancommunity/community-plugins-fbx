@@ -262,7 +262,7 @@ def writeMeshProp(fp, mesh, config):
     properties = [
         (b"RotationActive", "p_bool", 1),
         (b"InheritType", "p_enum", 1),
-        (b"ScalingMax", "p_vector_3d", [0,0,0]),
+        (b"ScalingMax", "p_vector_3d", [0.0,0.0,0.0]),
         (b"DefaultAttributeIndex", "p_integer", 0),
         (b"MHName", "p_string", mesh.name, False, True)
     ]
