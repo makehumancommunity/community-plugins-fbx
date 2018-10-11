@@ -226,22 +226,22 @@ def writeMaterial(fp, mesh, config):
 
     mat = mesh.material
     properties = [
-        ("DiffuseColor", "p_color", mat.diffuseColor.asTuple(), b"A"),
-        ("Diffuse", "p_vector_3d", mat.diffuseColor.asTuple(), b"A"),
-        ("SpecularColor", "p_color", mat.specularColor.asTuple(), b"A"),
-        ("Specular", "p_vector_3d", mat.specularColor.asTuple(), b"A"),
-        ("Shininess", "p_double", mat.shininess, b"A"),
-        ("Reflectivity", "p_double", 0, b"A"),
-        ("Emissive", "p_vector_3d", mat.emissiveColor.asTuple(), b"A"),
-        ("Ambient", "p_vector_3d", mat.ambientColor.asTuple(), b"A"),
-        ("TransparencyFactor", "p_number", mat.transparencyMapIntensity, True, b"A"),
-        ("Opacity", "p_double", mat.opacity, b"A")
+        (b"DiffuseColor", "p_color", mat.diffuseColor.asTuple(), b"A"),
+        (b"Diffuse", "p_vector_3d", mat.diffuseColor.asTuple(), b"A"),
+        (b"SpecularColor", "p_color", mat.specularColor.asTuple(), b"A"),
+        (b"Specular", "p_vector_3d", mat.specularColor.asTuple(), b"A"),
+        (b"Shininess", "p_double", mat.shininess, b"A"),
+        (b"Reflectivity", "p_double", 0.0, b"A"),
+        (b"Emissive", "p_vector_3d", mat.emissiveColor.asTuple(), b"A"),
+        (b"Ambient", "p_vector_3d", mat.ambientColor.asTuple(), b"A"),
+        (b"TransparencyFactor", "p_number", mat.transparencyMapIntensity, True, b"A"),
+        (b"Opacity", "p_double", mat.opacity, b"A")
     ]
 
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Objects')
-        fbx_binary.fbx_data_material(elem, key, id, properties)
+        fbx_binary.fbx_data_material(elem, bytes(key, 'utf-8'), id, properties)
         return
 
     from . import fbx_utils
@@ -326,13 +326,13 @@ def writeLinks(fp, meshes, config):
 
         mat = mesh.material
         for filepath,channel in [
-            (mat.diffuseTexture, "DiffuseColor"),
-            (mat.diffuseTexture, "TransparencyFactor"),
-            (mat.specularMapTexture, "SpecularIntensity"),
-            (mat.normalMapTexture, "Bump"),
-            (mat.transparencyMapTexture, "TransparencyFactor"),
-            (mat.bumpMapTexture, "BumpFactor"),
-            (mat.displacementMapTexture, "Displacement")]:
+            (mat.diffuseTexture, b"DiffuseColor"),
+            (mat.diffuseTexture, b"TransparencyFactor"),
+            (mat.specularMapTexture, b"SpecularIntensity"),
+            (mat.normalMapTexture, b"Bump"),
+            (mat.transparencyMapTexture, b"TransparencyFactor"),
+            (mat.bumpMapTexture, b"BumpFactor"),
+            (mat.displacementMapTexture, b"Displacement")]:
             if filepath:
                 texname = getTextureName(filepath)
                 opLink(fp, 'Texture::%s' % texname, 'Material::%s' % mesh.name, channel, config)
