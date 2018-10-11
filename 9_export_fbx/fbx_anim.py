@@ -84,10 +84,10 @@ def writeObjectDefs(fp, action, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Definitions')
-        fbx_binary.fbx_template_generate(elem, "AnimationStack", 1, "FbxAnimStack", properties_stack)
-        fbx_binary.fbx_template_generate(elem, "AnimationLayer", 1, "FbxAnimLayer", properties_layer)
-        fbx_binary.fbx_template_generate(elem, "AnimationCurveNode", ncurves, "FbxAnimCurveNode", properties_curvenode)
-        fbx_binary.fbx_template_generate(elem, "AnimationCurve", 3*ncurves)
+        fbx_binary.fbx_template_generate(elem, b"AnimationStack", 1, b"FbxAnimStack", properties_stack)
+        fbx_binary.fbx_template_generate(elem, b"AnimationLayer", 1, b"FbxAnimLayer", properties_layer)
+        fbx_binary.fbx_template_generate(elem, b"AnimationCurveNode", ncurves, b"FbxAnimCurveNode", properties_curvenode)
+        fbx_binary.fbx_template_generate(elem, b"AnimationCurve", 3*ncurves)
         return
 
     from . import fbx_utils

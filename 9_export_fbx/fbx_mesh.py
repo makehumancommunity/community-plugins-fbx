@@ -64,7 +64,7 @@ def writeObjectDefs(fp, meshes, nShapes, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Definitions')
-        fbx_binary.fbx_template_generate(elem, "Geometry", (nMeshes + nShapes), "FbxMesh", properties)
+        fbx_binary.fbx_template_generate(elem, b"Geometry", (nMeshes + nShapes), b"FbxMesh", properties)
         return
 
     from . import fbx_utils

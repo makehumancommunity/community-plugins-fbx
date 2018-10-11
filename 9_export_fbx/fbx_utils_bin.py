@@ -285,7 +285,13 @@ def elem_empty(elem, name):
 
 
 def _elem_data_single(elem, name, value, func_name):
+    print(elem)
+    print(value)
+    print(func_name)
+    print(type(func_name))
     sub_elem = elem_empty(elem, name)
+    print(sub_elem)
+    print(type(sub_elem))
     getattr(sub_elem, func_name)(value)
     return sub_elem
 

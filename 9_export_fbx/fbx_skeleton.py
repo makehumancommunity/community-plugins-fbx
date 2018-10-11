@@ -143,10 +143,10 @@ def writeObjectDefs(fp, meshes, skel, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, 'Definitions')
-        fbx_binary.fbx_template_generate(elem, "Model", nModels, "FbxNode", properties)
+        fbx_binary.fbx_template_generate(elem, b"Model", nModels, b"FbxNode", properties)
 
         if skel:
-            fbx_binary.fbx_template_generate(elem, "NodeAttribute", nBones, "FbxSkeleton", skel_properties)
+            fbx_binary.fbx_template_generate(elem, b"NodeAttribute", nBones, b"FbxSkeleton", skel_properties)
         return
 
     from . import fbx_utils
