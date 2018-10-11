@@ -53,12 +53,12 @@ def writeObjectDefs(fp, meshes, nShapes, config):
     nMeshes = len(meshes)
 
     properties = [
-        ("Color",   "p_color_rgb",      [0.8,0.8,0.8]),
-        ("BBoxMin", "p_vector_3d",      [0,0,0]),
-        ("BBoxMax", "p_vector_3d",      [0,0,0]),
-        ("Primary Visibility", "p_bool", True),
-        ("Casts Shadows", "p_bool",     True),
-        ("Receive Shadows", "p_bool",   True)
+        (b"Color", ((0.8, 0.8, 0.8), "p_color_rgb", False)),
+        (b"BBoxMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"BBoxMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"Primary Visibility", (True, "p_bool", False)),
+        (b"Casts Shadows", (True, "p_bool", False)),
+        (b"Receive Shadows", (True, "p_bool", False))
     ]
 
     if config.binary:

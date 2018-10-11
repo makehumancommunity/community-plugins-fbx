@@ -85,65 +85,76 @@ def writeObjectDefs(fp, meshes, config):
     nMaterials,nTextures,nImages = getObjectNumbers(meshes)
 
     properties_mat = [
-        ("ShadingModel", "p_string", "Phong"),
-        ("MultiLayer", "p_bool", 0),
-        ("EmissiveColor", "p_color", [0,0,0], True),
-        ("EmissiveFactor", "p_number", 1, True),
-        ("AmbientColor", "p_color", [0.2,0.2,0.2], True),
-        ("AmbientFactor", "p_number", 1, True),
-        ("DiffuseColor", "p_color", [0.8,0.8,0.8], True),
-        ("DiffuseFactor", "p_number", 1, True),
-        ("Bump", "p_vector_3d", [0,0,0]),
-        ("NormalMap", "p_vector_3d", [0,0,0]),
-        ("BumpFactor", "p_double", 1),
-        ("TransparentColor", "p_color", [0,0,0], True),
-        ("TransparencyFactor", "p_number", 0, True),
-        ("DisplacementColor", "p_color_rgb", [0,0,0]),
-        ("DisplacementFactor", "p_double", 1),
-        ("VectorDisplacementColor", "p_color_rgb", [0,0,0]),
-        ("VectorDisplacementFactor", "p_double", 1),
-        ("SpecularColor", "p_color", [0.2,0.2,0.2], True),
-        ("SpecularFactor", "p_number", 1, True),
-        ("ShininessExponent", "p_number", 20, True),
-        ("ReflectionColor", "p_color", [0,0,0], True),
-        ("ReflectionFactor", "p_number", 1, True)
+        (b"ShadingModel", ("Phong", "p_string", False)),
+        (b"MultiLayer", (False, "p_bool", False)),
+        # Lambert-specific.
+        (b"EmissiveColor", ((0.0, 0.0, 0.0), "p_color", True)),
+        (b"EmissiveFactor", (1.0, "p_number", True)),
+        (b"AmbientColor", ((0.2, 0.2, 0.2), "p_color", True)),
+        (b"AmbientFactor", (1.0, "p_number", True)),
+        (b"DiffuseColor", ((0.8, 0.8, 0.8), "p_color", True)),
+        (b"DiffuseFactor", (1.0, "p_number", True)),
+        (b"TransparentColor", ((0.0, 0.0, 0.0), "p_color", True)),
+        (b"TransparencyFactor", (0.0, "p_number", True)),
+        (b"Opacity", (1.0, "p_number", True)),
+        (b"NormalMap", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"Bump", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"BumpFactor", (1.0, "p_double", False)),
+        (b"DisplacementColor", ((0.0, 0.0, 0.0), "p_color_rgb", False)),
+        (b"DisplacementFactor", (1.0, "p_double", False)),
+        (b"VectorDisplacementColor", ((0.0, 0.0, 0.0), "p_color_rgb", False)),
+        (b"VectorDisplacementFactor", (1.0, "p_double", False)),
+        # Phong-specific.
+        (b"SpecularColor", ((0.2, 0.2, 0.2), "p_color", True)),
+        (b"SpecularFactor", (1.0, "p_number", True)),
+        # Not sure about the name, importer uses this (but ShininessExponent for tex prop name!)
+        # And in fbx exported by sdk, you have one in template, the other in actual material!!! :/
+        # For now, using both.
+        (b"Shininess", (20.0, "p_number", True)),
+        (b"ShininessExponent", (20.0, "p_number", True)),
+        (b"ReflectionColor", ((0.0, 0.0, 0.0), "p_color", True)),
+        (b"ReflectionFactor", (1.0, "p_number", True)),
     ]
 
     properties_tex = [
-        ("TextureTypeUse", "p_enum", 0),
-        ("Texture alpha", "p_number", 1, True),
-        ("CurrentMappingType", "p_enum", 0),
-        ("WrapModeU", "p_enum", 0),
-        ("WrapModeV", "p_enum", 0),
-        ("UVSwap", "p_bool", 0),
-        ("PremultiplyAlpha", "p_bool", 1),
-        ("Translation", "p_vector", [0,0,0], True),
-        ("Rotation", "p_vector", [0,0,0], True),
-        ("Scaling", "p_vector", [1,1,1], True),
-        ("TextureRotationPivot", "p_vector_3d", [0,0,0]),
-        ("TextureScalingPivot", "p_vector_3d", [0,0,0]),
-        ("CurrentTextureBlendMode", "p_enum", 1),
-        ("UVSet", "p_string", "default"),
-        ("UseMaterial", "p_bool", 0),
-        ("UseMipMap", "p_bool", 0)
+        (b"TextureTypeUse", (0, "p_enum", False)),  # Standard.
+        (b"AlphaSource", (2, "p_enum", False)),  # Black (i.e. texture's alpha), XXX name guessed!.
+        (b"Texture alpha", (1.0, "p_double", False)),
+        (b"PremultiplyAlpha", (True, "p_bool", False)),
+        (b"CurrentTextureBlendMode", (1, "p_enum", False)),  # Additive...
+        (b"CurrentMappingType", (0, "p_enum", False)),  # UV.
+        (b"UVSet", ("default", "p_string", False)),  # UVMap name.
+        (b"WrapModeU", (0, "p_enum", False)),  # Repeat.
+        (b"WrapModeV", (0, "p_enum", False)),  # Repeat.
+        (b"UVSwap", (False, "p_bool", False)),
+        (b"Translation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"Rotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"Scaling", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
+        (b"TextureRotationPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        (b"TextureScalingPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+        # Not sure about those two...
+        (b"UseMaterial", (False, "p_bool", False)),
+        (b"UseMipMap", (False, "p_bool", False)),
     ]
 
     properties_vid = [
-        ("ImageSequence", "p_bool", 0),
-        ("ImageSequenceOffset", "p_integer", 0),
-        ("FrameRate", "p_double", 0),
-        ("LastFrame", "p_integer", 0),
-        ("Width", "p_integer", 0),
-        ("Height", "p_integer", 0),
-        ("Path", "p_string_xrefurl", ""),
-        ("StartFrame", "p_integer", 0),
-        ("StopFrame", "p_integer", 0),
-        ("PlaySpeed", "p_double", 0),
-        ("Offset", "p_timestamp", 0),
-        ("InterlaceMode", "p_enum", 0),
-        ("FreeRunning", "p_bool", 0),
-        ("Loop", "p_bool", 0),
-        ("AccessMode", "p_enum", 0)
+        (b"Width", (0, "p_integer", False)),
+        (b"Height", (0, "p_integer", False)),
+        (b"Path", ("", "p_string_url", False)),
+        (b"AccessMode", (0, "p_enum", False)),  # Disk (0=Disk, 1=Mem, 2=DiskAsync).
+        # All videos.
+        (b"StartFrame", (0, "p_integer", False)),
+        (b"StopFrame", (0, "p_integer", False)),
+        (b"Offset", (0, "p_timestamp", False)),
+        (b"PlaySpeed", (0.0, "p_double", False)),
+        (b"FreeRunning", (False, "p_bool", False)),
+        (b"Loop", (False, "p_bool", False)),
+        (b"InterlaceMode", (0, "p_enum", False)),  # None, i.e. progressive.
+        # Image sequences.
+        (b"ImageSequence", (False, "p_bool", False)),
+        (b"ImageSequenceOffset", (0, "p_integer", False)),
+        (b"FrameRate", (0.0, "p_double", False)),
+        (b"LastFrame", (0, "p_integer", False)),
     ]
 
     if config.binary:
