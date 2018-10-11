@@ -1,0 +1,1680 @@
+diff -Nbrc 9_export_fbx_bitbucket_stable/data_types.py 9_export_fbx/data_types.py
+*** 9_export_fbx_bitbucket_stable/data_types.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/data_types.py	2018-10-11 11:07:02.801926653 +0200
+***************
+*** 16,24 ****
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
+  # Script copyright (C) 2006-2012, assimp team
+  # Script copyright (C) 2013 Blender Foundation
+! # Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
+  
+  BOOL = b'C'[0]
+  INT16 = b'Y'[0]
+--- 16,27 ----
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
++ # <pep8 compliant>
++ 
+  # Script copyright (C) 2006-2012, assimp team
+  # Script copyright (C) 2013 Blender Foundation
+! 
+! # Imported from blender version 2.79, then modified by MakeHuman
+  
+  BOOL = b'C'[0]
+  INT16 = b'Y'[0]
+***************
+*** 35,40 ****
+--- 38,47 ----
+  BOOL_ARRAY = b'b'[0]
+  BYTE_ARRAY = b'c'[0]
+  
++ # Some other misc defines
++ # Known combinations so far - supposed meaning: A = animatable, A+ = animated, U = UserProp
++ # VALID_NUMBER_FLAGS = {b'A', b'A+', b'AU', b'A+U'}  # Not used...
++ 
+  # array types - actual length may vary (depending on underlying C implementation)!
+  import array
+  
+***************
+*** 44,50 ****
+  
+  ARRAY_INT32 = None
+  ARRAY_INT64 = None
+! for _t in 'il':  # typecode 'q' (signed long long) is only supported since python 3.3
+      size = array.array(_t).itemsize
+      if size == 4:
+          ARRAY_INT32 = _t
+--- 51,57 ----
+  
+  ARRAY_INT32 = None
+  ARRAY_INT64 = None
+! for _t in 'ilq':
+      size = array.array(_t).itemsize
+      if size == 4:
+          ARRAY_INT32 = _t
+***************
+*** 55,64 ****
+  if not ARRAY_INT32:
+      raise Exception("Impossible to get a 4-bytes integer type for array!")
+  if not ARRAY_INT64:
+!     # In python 2 we have no 64bit int type (long long). We will use a 32bit integer (we don't need such large index space anyway).
+!     # However, it's possible to struct.pack this value as a 64bit int as 'q' type is available there.
+!     #raise Exception("Impossible to get an 8-bytes integer type for array!")
+!     ARRAY_INT64 = 'q'
+  
+  ARRAY_FLOAT32 = None
+  ARRAY_FLOAT64 = None
+--- 62,68 ----
+  if not ARRAY_INT32:
+      raise Exception("Impossible to get a 4-bytes integer type for array!")
+  if not ARRAY_INT64:
+!     raise Exception("Impossible to get an 8-bytes integer type for array!")
+  
+  ARRAY_FLOAT32 = None
+  ARRAY_FLOAT64 = None
+diff -Nbrc 9_export_fbx_bitbucket_stable/encode_bin.py 9_export_fbx/encode_bin.py
+*** 9_export_fbx_bitbucket_stable/encode_bin.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/encode_bin.py	2018-10-11 14:04:59.471894323 +0200
+***************
+*** 16,29 ****
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
+  # Script copyright (C) 2013 Campbell Barton
+- # Modified by Jonas Hauquier for python 2.7 compat and MakeHuman FBX export
+  
+! import data_types
+  
+  from struct import pack
+  import array
+  import zlib
+  
+  _BLOCK_SENTINEL_LENGTH = 13
+  _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
+--- 16,36 ----
+  #
+  # ##### END GPL LICENSE BLOCK #####
+  
++ # <pep8 compliant>
++ 
+  # Script copyright (C) 2013 Campbell Barton
+  
+! # Imported from blender version 2.79, then modified by MakeHuman
+! 
+! try:
+!     from . import data_types
+! except:
+!     import data_types
+  
+  from struct import pack
+  import array
+  import zlib
++ import log
+  
+  _BLOCK_SENTINEL_LENGTH = 13
+  _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
+***************
+*** 63,110 ****
+          self._props_length = -1
+  
+      def add_bool(self, data):
+!         assert(isinstance(data, (bool, int, long)))
+!         data = bool(data)
+          data = pack('?', data)
+  
+          self.props_type.append(data_types.BOOL)
+          self.props.append(data)
+  
+      def add_int16(self, data):
+!         assert(isinstance(data, (int, long)))
+!         data = int(data)
+          data = pack('<h', data)
+  
+          self.props_type.append(data_types.INT16)
+          self.props.append(data)
+  
+      def add_int32(self, data):
+!         assert(isinstance(data, (int, long)))
+!         data = int(data)
+          data = pack('<i', data)
+  
+          self.props_type.append(data_types.INT32)
+          self.props.append(data)
+  
+      def add_int64(self, data):
+!         assert(isinstance(data, (int, long)))
+!         data = int(data)
+          data = pack('<q', data)
+  
+          self.props_type.append(data_types.INT64)
+          self.props.append(data)
+  
+      def add_float32(self, data):
+!         assert(isinstance(data, (int, long, float)))
+!         data = float(data)
+          data = pack('<f', data)
+  
+          self.props_type.append(data_types.FLOAT32)
+          self.props.append(data)
+  
+      def add_float64(self, data):
+!         assert(isinstance(data, (int, long, float)))
+!         data = float(data)
+          data = pack('<d', data)
+  
+          self.props_type.append(data_types.FLOAT64)
+--- 70,114 ----
+          self._props_length = -1
+  
+      def add_bool(self, data):
+!         assert(isinstance(data, bool))
+          data = pack('?', data)
+  
+          self.props_type.append(data_types.BOOL)
+          self.props.append(data)
+  
+      def add_int16(self, data):
+!         assert(isinstance(data, int))
+          data = pack('<h', data)
+  
+          self.props_type.append(data_types.INT16)
+          self.props.append(data)
+  
+      def add_int32(self, data):
+!         assert(isinstance(data, int))
+          data = pack('<i', data)
+  
+          self.props_type.append(data_types.INT32)
+          self.props.append(data)
+  
+      def add_int64(self, data):
+!         assert(isinstance(data, int))
+          data = pack('<q', data)
+  
+          self.props_type.append(data_types.INT64)
+          self.props.append(data)
+  
+      def add_float32(self, data):
+!         assert(isinstance(data, float))
+          data = pack('<f', data)
+  
+          self.props_type.append(data_types.FLOAT32)
+          self.props.append(data)
+  
+      def add_float64(self, data):
+!         log.debug("--add_float64--")
+!         log.debug(data)
+!         log.debug(type(data))
+!         assert(isinstance(data, float))
+          data = pack('<d', data)
+  
+          self.props_type.append(data_types.FLOAT64)
+***************
+*** 118,127 ****
+          self.props.append(data)
+  
+      def add_string(self, data):
+!         if isinstance(data, unicode):
+!             data = data.encode('ascii')
+!         if isinstance(data, basestring):
+!             data = bytes(data)
+          assert(isinstance(data, bytes))
+          data = pack('<I', len(data)) + data
+  
+--- 122,130 ----
+          self.props.append(data)
+  
+      def add_string(self, data):
+!         log.debug("--add_string--")
+!         log.debug(data)
+!         log.debug(type(data))
+          assert(isinstance(data, bytes))
+          data = pack('<I', len(data)) + data
+  
+***************
+*** 129,135 ****
+          self.props.append(data)
+  
+      def add_string_unicode(self, data):
+!         assert(isinstance(data, basestring))
+          data = data.encode('utf8')
+          data = pack('<I', len(data)) + data
+  
+--- 132,138 ----
+          self.props.append(data)
+  
+      def add_string_unicode(self, data):
+!         assert(isinstance(data, str))
+          data = data.encode('utf8')
+          data = pack('<I', len(data)) + data
+  
+***************
+*** 145,160 ****
+          if _IS_BIG_ENDIAN:
+              data = data[:]
+              data.byteswap()
+!         #data = data.tobytes()
+!         data = data.tostring()  # Python 2 equivalent
+  
+          # mimic behavior of fbxconverter (also common sense)
+          # we could make this configurable.
+!         encoding = 0 if len(data) <= 128 else 0
+          if encoding == 0:
+              pass
+          elif encoding == 1:
+!             data = zlib.compress(data, 9)
+  
+          comp_len = len(data)
+  
+--- 148,162 ----
+          if _IS_BIG_ENDIAN:
+              data = data[:]
+              data.byteswap()
+!         data = data.tobytes()
+  
+          # mimic behavior of fbxconverter (also common sense)
+          # we could make this configurable.
+!         encoding = 0 if len(data) <= 128 else 1
+          if encoding == 0:
+              pass
+          elif encoding == 1:
+!             data = zlib.compress(data, 1)
+  
+          comp_len = len(data)
+  
+***************
+*** 234,262 ****
+          assert(self._end_offset != -1)
+          assert(self._props_length != -1)
+  
+-         btell = tell()
+-         offset = 12  # 3 uints
+- 
+          write(pack('<3I', self._end_offset, len(self.props), self._props_length))
+  
+!         assert(tell() - btell == offset)
+!         offset += 1 + len(self.id)  # len + idname
+! 
+!         #write(bytes((len(self.id),)))
+!         write( pack('<B', len(self.id)) )  # String length is one byte
+!         write( self.id )
+! 
+!         assert(tell() - btell == offset)
+  
+          for i, data in enumerate(self.props):
+!             #write(bytes((self.props_type[i],)))
+!             write( pack('<B', self.props_type[i]) )
+              write(data)
+  
+-             # 1 byte for the prop type
+-             offset += 1 + len(data)
+-             assert(tell() - btell == offset)
+- 
+          self._write_children(write, tell, is_last)
+  
+          if tell() != self._end_offset:
+--- 236,250 ----
+          assert(self._end_offset != -1)
+          assert(self._props_length != -1)
+  
+          write(pack('<3I', self._end_offset, len(self.props), self._props_length))
+  
+!         write(bytes((len(self.id),)))
+!         write(self.id)
+  
+          for i, data in enumerate(self.props):
+!             write(bytes((self.props_type[i],)))
+              write(data)
+  
+          self._write_children(write, tell, is_last)
+  
+          if tell() != self._end_offset:
+***************
+*** 283,304 ****
+      ok = 0
+      for elem in elem_root.elems:
+          if elem.id == b'FileId':
+!             #assert(elem.props_type[0] == b'R'[0])
+!             #assert(len(elem.props_type) == 1)
+!             #elem.props.clear()
+!             del elem.props[:]
+!             #elem.props_type.clear()
+!             del elem.props_type[:]
+  
+              elem.add_bytes(_FILE_ID)
+              ok += 1
+          elif elem.id == b'CreationTime':
+!             #assert(elem.props_type[0] == b'S'[0])
+!             #assert(len(elem.props_type) == 1)
+!             #elem.props.clear()
+!             del elem.props[:]
+!             #elem.props_type.clear()
+!             del elem.props_type[:]
+  
+              elem.add_string(_TIME_ID)
+              ok += 1
+--- 271,288 ----
+      ok = 0
+      for elem in elem_root.elems:
+          if elem.id == b'FileId':
+!             assert(elem.props_type[0] == b'R'[0])
+!             assert(len(elem.props_type) == 1)
+!             elem.props.clear()
+!             elem.props_type.clear()
+  
+              elem.add_bytes(_FILE_ID)
+              ok += 1
+          elif elem.id == b'CreationTime':
+!             assert(elem.props_type[0] == b'S'[0])
+!             assert(len(elem.props_type) == 1)
+!             elem.props.clear()
+!             elem.props_type.clear()
+  
+              elem.add_string(_TIME_ID)
+              ok += 1
+***************
+*** 307,321 ****
+              break
+  
+      if ok != 2:
+-         import log
+          log.debug("Missing fields!")
+  
+  
+  def write(fn, elem_root, version=None):
+!     assert(elem_root.id == b'')  # If this check fails the elem_root is not a root element
+  
+      if version is None:
+!         import fbx_utils
+          version = fbx_utils.FBX_VERSION
+  
+      with open(fn, 'wb') as f:
+--- 291,304 ----
+              break
+  
+      if ok != 2:
+          log.debug("Missing fields!")
+  
+  
+  def write(fn, elem_root, version=None):
+!     assert(elem_root.id == b'')
+  
+      if version is None:
+!         from . import fbx_utils
+          version = fbx_utils.FBX_VERSION
+  
+      with open(fn, 'wb') as f:
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_anim.py 9_export_fbx/fbx_anim.py
+*** 9_export_fbx_bitbucket_stable/fbx_anim.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_anim.py	2018-10-11 13:07:27.414473293 +0200
+***************
+*** 84,96 ****
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, "AnimationStack", 1, "FbxAnimStack", properties_stack)
+!         fbx_binary.fbx_template_generate(elem, "AnimationLayer", 1, "FbxAnimLayer", properties_layer)
+!         fbx_binary.fbx_template_generate(elem, "AnimationCurveNode", ncurves, "FbxAnimCurveNode", properties_curvenode)
+!         fbx_binary.fbx_template_generate(elem, "AnimationCurve", 3*ncurves)
+          return
+  
+!     import fbx_utils
+  
+      fp.write(
+  """
+--- 84,96 ----
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, b"AnimationStack", 1, b"FbxAnimStack", properties_stack)
+!         fbx_binary.fbx_template_generate(elem, b"AnimationLayer", 1, b"FbxAnimLayer", properties_layer)
+!         fbx_binary.fbx_template_generate(elem, b"AnimationCurveNode", ncurves, b"FbxAnimCurveNode", properties_curvenode)
+!         fbx_binary.fbx_template_generate(elem, b"AnimationCurve", 3*ncurves)
+          return
+  
+!     from . import fbx_utils
+  
+      fp.write(
+  """
+***************
+*** 250,256 ****
+  
+  def writeTakes(fp, action, config):
+      if config.binary:
+!         import fbx_binary
+          fbx_binary.fbx_takes_element(fp)
+          return
+  
+--- 250,256 ----
+  
+  def writeTakes(fp, action, config):
+      if config.binary:
+!         from . import fbx_binary
+          fbx_binary.fbx_takes_element(fp)
+          return
+  
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_binary.py 9_export_fbx/fbx_binary.py
+*** 9_export_fbx_bitbucket_stable/fbx_binary.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_binary.py	2018-10-11 14:02:51.089903379 +0200
+***************
+*** 24,30 ****
+  import datetime
+  import log
+  
+! from fbx_utils import *
+  
+  # Units convertors!
+  convert_sec_to_ktime = units_convertor("second", "ktime")
+--- 24,30 ----
+  import datetime
+  import log
+  
+! from .fbx_utils import *
+  
+  # Units convertors!
+  convert_sec_to_ktime = units_convertor("second", "ktime")
+***************
+*** 228,235 ****
+              elem_props_set(props, "p_integer", k.encode(), v, custom=True)
+          elif isinstance(v, float):
+              elem_props_set(props, "p_double", k.encode(), v, custom=True)
+!         elif list_val and len(list_val) == 3:
+              elem_props_set(props, "p_vector", k.encode(), list_val, custom=True)
+  
+  
+  def fbx_data_bindpose_element(objectsParent, key, id, count):
+--- 228,240 ----
+              elem_props_set(props, "p_integer", k.encode(), v, custom=True)
+          elif isinstance(v, float):
+              elem_props_set(props, "p_double", k.encode(), v, custom=True)
+!         elif list_val:
+!             if len(list_val) == 3:
+                  elem_props_set(props, "p_vector", k.encode(), list_val, custom=True)
++             else:
++                 elem_props_set(props, "p_string", k.encode(), str(list_val), custom=True)
++         else:
++             elem_props_set(props, "p_string", k.encode(), str(v), custom=True)
+  
+  
+  def fbx_data_bindpose_element(objectsParent, key, id, count):
+***************
+*** 255,264 ****
+  
+  def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnorm, texco, fuv):
+      geom = elem_data_single_int64(objectsParent, b"Geometry", id)  #get_fbx_uuid_from_key(key))
+!     geom.add_string(fbx_name_class(key.encode()))
+      geom.add_string(b"Mesh")
+  
+!     name = key.split('::')[1]
+  
+      props = elem_properties(geom)
+  
+--- 260,274 ----
+  
+  def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnorm, texco, fuv):
+      geom = elem_data_single_int64(objectsParent, b"Geometry", id)  #get_fbx_uuid_from_key(key))
+!     log.debug("---KEY---")
+!     log.debug(key)
+!     log.debug(type(key))
+!     res = key.encode()
+!     log.debug(type(res))
+!     geom.add_string(fbx_name_class(res))
+      geom.add_string(b"Mesh")
+  
+!     name = res.split(b'::')[1]
+  
+      props = elem_properties(geom)
+  
+***************
+*** 297,303 ****
+  
+      lay_nor = elem_data_single_int32(geom, b"LayerElementNormal", 0)
+      elem_data_single_int32(lay_nor, b"Version", FBX_GEOMETRY_NORMAL_VERSION)
+!     elem_data_single_string(lay_nor, b"Name", (name+"_Normal").encode())
+      elem_data_single_string(lay_nor, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_nor, b"ReferenceInformationType", b"IndexToDirect")
+  
+--- 307,313 ----
+  
+      lay_nor = elem_data_single_int32(geom, b"LayerElementNormal", 0)
+      elem_data_single_int32(lay_nor, b"Version", FBX_GEOMETRY_NORMAL_VERSION)
+!     elem_data_single_string(lay_nor, b"Name", name+b"_Normal")
+      elem_data_single_string(lay_nor, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_nor, b"ReferenceInformationType", b"IndexToDirect")
+  
+***************
+*** 380,386 ****
+      uvindex = 0
+      lay_uv = elem_data_single_int32(geom, b"LayerElementUV", uvindex)
+      elem_data_single_int32(lay_uv, b"Version", FBX_GEOMETRY_UV_VERSION)
+!     elem_data_single_string_unicode(lay_uv, b"Name", (name+"_UV").encode())
+      elem_data_single_string(lay_uv, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_uv, b"ReferenceInformationType", b"IndexToDirect")
+  
+--- 390,396 ----
+      uvindex = 0
+      lay_uv = elem_data_single_int32(geom, b"LayerElementUV", uvindex)
+      elem_data_single_int32(lay_uv, b"Version", FBX_GEOMETRY_UV_VERSION)
+!     elem_data_single_string_unicode(lay_uv, b"Name", str(name+b"_UV"))
+      elem_data_single_string(lay_uv, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_uv, b"ReferenceInformationType", b"IndexToDirect")
+  
+***************
+*** 394,400 ****
+      # Face's materials.
+      lay_mat = elem_data_single_int32(geom, b"LayerElementMaterial", 0)
+      elem_data_single_int32(lay_mat, b"Version", FBX_GEOMETRY_MATERIAL_VERSION)
+!     elem_data_single_string(lay_mat, b"Name", (name+"_Material").encode())
+  
+      elem_data_single_string(lay_mat, b"MappingInformationType", b"AllSame")
+      elem_data_single_string(lay_mat, b"ReferenceInformationType", b"IndexToDirect")
+--- 404,410 ----
+      # Face's materials.
+      lay_mat = elem_data_single_int32(geom, b"LayerElementMaterial", 0)
+      elem_data_single_int32(lay_mat, b"Version", FBX_GEOMETRY_MATERIAL_VERSION)
+!     elem_data_single_string(lay_mat, b"Name", name+b"_Material")
+  
+      elem_data_single_string(lay_mat, b"MappingInformationType", b"AllSame")
+      elem_data_single_string(lay_mat, b"ReferenceInformationType", b"IndexToDirect")
+***************
+*** 403,409 ****
+      # Face's textures -perhaps obsolete.
+      lay_tex = elem_data_single_int32(geom, b"LayerElementTexture", 0)
+      elem_data_single_int32(lay_tex, b"Version", 101)
+!     elem_data_single_string(lay_tex, b"Name", (name+"_Texture").encode())
+  
+      elem_data_single_string(lay_tex, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_tex, b"ReferenceInformationType", b"IndexToDirect")
+--- 413,419 ----
+      # Face's textures -perhaps obsolete.
+      lay_tex = elem_data_single_int32(geom, b"LayerElementTexture", 0)
+      elem_data_single_int32(lay_tex, b"Version", 101)
+!     elem_data_single_string(lay_tex, b"Name", name+b"_Texture")
+  
+      elem_data_single_string(lay_tex, b"MappingInformationType", b"ByPolygonVertex")
+      elem_data_single_string(lay_tex, b"ReferenceInformationType", b"IndexToDirect")
+***************
+*** 462,482 ****
+      for pname, ptype, value, animatable, custom in get_properties(properties):
+          elem_props_set(props, ptype, pname, value, animatable, custom)
+  
+!     elem_data_single_string(mod, b"Shading", "Y")
+!     elem_data_single_string(mod, b"Culling", "CullingOff")
+  
+  
+  def fbx_data_material(objectsParent, key, id, properties):
+      fbx_mat = elem_data_single_int64(objectsParent, b"Material", id)
+      fbx_mat.add_string(fbx_name_class(key))
+      fbx_mat.add_string(b"")
+  
+      elem_data_single_int32(fbx_mat, b"Version", 102)
+!     elem_data_single_string(fbx_mat, b"ShadingModel", "phong")
+      elem_data_single_int32(fbx_mat, b"MultiLayer", 0)
+  
+      props = elem_properties(fbx_mat)
+      for pname, ptype, value, animatable, custom in get_properties(properties):
+          elem_props_set(props, ptype, pname, value, animatable, custom)
+  
+  
+--- 472,500 ----
+      for pname, ptype, value, animatable, custom in get_properties(properties):
+          elem_props_set(props, ptype, pname, value, animatable, custom)
+  
+!     elem_data_single_string(mod, b"Shading", b"Y")
+!     elem_data_single_string(mod, b"Culling", b"CullingOff")
+  
+  
+  def fbx_data_material(objectsParent, key, id, properties):
+      fbx_mat = elem_data_single_int64(objectsParent, b"Material", id)
++     log.debug(key)
++     log.debug(type(key))
+      fbx_mat.add_string(fbx_name_class(key))
+      fbx_mat.add_string(b"")
+  
+      elem_data_single_int32(fbx_mat, b"Version", 102)
+!     elem_data_single_string(fbx_mat, b"ShadingModel", b"phong")
+      elem_data_single_int32(fbx_mat, b"MultiLayer", 0)
+  
+      props = elem_properties(fbx_mat)
+      for pname, ptype, value, animatable, custom in get_properties(properties):
++         log.debug("--- fbx_data_material -> get_properties ---")
++         log.debug(pname)
++         log.debug(ptype)
++         log.debug(value)
++         log.debug(animatable)
++         log.debug(custom)
+          elem_props_set(props, ptype, pname, value, animatable, custom)
+  
+  
+***************
+*** 508,520 ****
+      elem_data_single_string(fbx_tex, b"Type", b"TextureVideoClip")
+      elem_data_single_int32(fbx_tex, b"Version", FBX_TEXTURE_VERSION)
+      elem_data_single_string(fbx_tex, b"TextureName", fbx_name_class(key.encode()))
+!     elem_data_single_string(fbx_tex, b"Media", video_key)
+!     elem_data_single_string_unicode(fbx_tex, b"Filename", texpath)
+!     elem_data_single_string_unicode(fbx_tex, b"RelativeFilename", texpath_rel)
+! 
+!     elem_data_single_float32_array(fbx_tex, b"ModelUVTranslation", [0,0])
+!     elem_data_single_float32_array(fbx_tex, b"ModelUVScaling", [1,1])
+!     elem_data_single_string(fbx_tex, b"Texture_Alpha_Source", "None")
+      elem_data_single_int32_array(fbx_tex, b"Cropping", [0,0,0,0])
+  
+      props = elem_properties(fbx_tex)
+--- 526,538 ----
+      elem_data_single_string(fbx_tex, b"Type", b"TextureVideoClip")
+      elem_data_single_int32(fbx_tex, b"Version", FBX_TEXTURE_VERSION)
+      elem_data_single_string(fbx_tex, b"TextureName", fbx_name_class(key.encode()))
+!     elem_data_single_string(fbx_tex, b"Media", bytes(video_key, 'utf-8'))
+!     elem_data_single_string_unicode(fbx_tex, b"Filename", str(texpath))
+!     elem_data_single_string_unicode(fbx_tex, b"RelativeFilename", str(texpath_rel))
+! 
+!     elem_data_single_float32_array(fbx_tex, b"ModelUVTranslation", [0.0,0.0])
+!     elem_data_single_float32_array(fbx_tex, b"ModelUVScaling", [1.0,1.0])
+!     elem_data_single_string(fbx_tex, b"Texture_Alpha_Source", b"None")
+      elem_data_single_int32_array(fbx_tex, b"Cropping", [0,0,0,0])
+  
+      props = elem_properties(fbx_tex)
+***************
+*** 704,710 ****
+      up_axis, front_axis, coord_axis = RIGHT_HAND_AXES[mesh_orientation]
+      # Currently not sure about that, but looks like default unit of FBX is cm...
+      #scale_factor = 10.0/config.scale  # MH scales the mesh coordinates, the scale factor is a constant
+!     scale_factor = 10
+      elem_props_set(props, "p_integer", b"UpAxis", up_axis[0])
+      elem_props_set(props, "p_integer", b"UpAxisSign", up_axis[1])
+      elem_props_set(props, "p_integer", b"FrontAxis", front_axis[0])
+--- 722,728 ----
+      up_axis, front_axis, coord_axis = RIGHT_HAND_AXES[mesh_orientation]
+      # Currently not sure about that, but looks like default unit of FBX is cm...
+      #scale_factor = 10.0/config.scale  # MH scales the mesh coordinates, the scale factor is a constant
+!     scale_factor = 10.0
+      elem_props_set(props, "p_integer", b"UpAxis", up_axis[0])
+      elem_props_set(props, "p_integer", b"UpAxisSign", up_axis[1])
+      elem_props_set(props, "p_integer", b"FrontAxis", front_axis[0])
+***************
+*** 722,728 ****
+      elem_props_set(props, "p_enum", b"TimeMode", 0)
+      elem_props_set(props, "p_timestamp", b"TimeSpanStart", 0)
+      elem_props_set(props, "p_timestamp", b"TimeSpanStop", 46186158000)
+!     elem_props_set(props, "p_double", b"CustomFrameRate", -1)
+  
+      # ##### End of GlobalSettings element.
+  
+--- 740,746 ----
+      elem_props_set(props, "p_enum", b"TimeMode", 0)
+      elem_props_set(props, "p_timestamp", b"TimeSpanStart", 0)
+      elem_props_set(props, "p_timestamp", b"TimeSpanStop", 46186158000)
+!     elem_props_set(props, "p_double", b"CustomFrameRate", -1.0)
+  
+      # ##### End of GlobalSettings element.
+  
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_deformer.py 9_export_fbx/fbx_deformer.py
+*** 9_export_fbx_bitbucket_stable/fbx_deformer.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_deformer.py	2018-10-11 13:33:57.252816097 +0200
+***************
+*** 86,94 ****
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+          if count > 0:
+!             fbx_binary.fbx_template_generate(elem, "Deformer", count)
+          if skel:
+!             fbx_binary.fbx_template_generate(elem, "Pose", 1)
+          return
+  
+      if count > 0:
+--- 86,94 ----
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+          if count > 0:
+!             fbx_binary.fbx_template_generate(elem, b"Deformer", count)
+          if skel:
+!             fbx_binary.fbx_template_generate(elem, b"Pose", 1)
+          return
+  
+      if count > 0:
+***************
+*** 194,200 ****
+      id,key = getId("Deformer::%s" % name)
+  
+      properties = [
+!         ("MHName", "p_string", "%sSkin" % name, False, True)
+      ]
+  
+      if config.binary:
+--- 194,200 ----
+      id,key = getId("Deformer::%s" % name)
+  
+      properties = [
+!         (b"MHName", "p_string", "%sSkin" % name, False, True)
+      ]
+  
+      if config.binary:
+***************
+*** 203,209 ****
+          fbx_binary.fbx_data_deformer(elem, key, id, properties)
+          return
+  
+!     import fbx_utils
+  
+      fp.write(
+  '    Deformer: %d, "%s", "Skin" {' % (id, key) +
+--- 203,209 ----
+          fbx_binary.fbx_data_deformer(elem, key, id, properties)
+          return
+  
+!     from . import fbx_utils
+  
+      fp.write(
+  '    Deformer: %d, "%s", "Skin" {' % (id, key) +
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_header.py 9_export_fbx/fbx_header.py
+*** 9_export_fbx_bitbucket_stable/fbx_header.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_header.py	2018-10-11 11:20:11.632952977 +0200
+***************
+*** 58,64 ****
+          fbx_binary.fbx_references_elements(root)
+          return
+  
+!     import fbx_utils
+      mesh_orientation = fbx_utils.getMeshOrientation(config)
+      up_axis, front_axis, coord_axis = fbx_utils.RIGHT_HAND_AXES[mesh_orientation]
+  
+--- 58,64 ----
+          fbx_binary.fbx_references_elements(root)
+          return
+  
+!     from . import fbx_utils
+      mesh_orientation = fbx_utils.getMeshOrientation(config)
+      up_axis, front_axis, coord_axis = fbx_utils.RIGHT_HAND_AXES[mesh_orientation]
+  
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_material.py 9_export_fbx/fbx_material.py
+*** 9_export_fbx_bitbucket_stable/fbx_material.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_material.py	2018-10-11 14:04:28.900372869 +0200
+***************
+*** 85,160 ****
+      nMaterials,nTextures,nImages = getObjectNumbers(meshes)
+  
+      properties_mat = [
+!         ("ShadingModel", "p_string", "Phong"),
+!         ("MultiLayer", "p_bool", 0),
+!         ("EmissiveColor", "p_color", [0,0,0], True),
+!         ("EmissiveFactor", "p_number", 1, True),
+!         ("AmbientColor", "p_color", [0.2,0.2,0.2], True),
+!         ("AmbientFactor", "p_number", 1, True),
+!         ("DiffuseColor", "p_color", [0.8,0.8,0.8], True),
+!         ("DiffuseFactor", "p_number", 1, True),
+!         ("Bump", "p_vector_3d", [0,0,0]),
+!         ("NormalMap", "p_vector_3d", [0,0,0]),
+!         ("BumpFactor", "p_double", 1),
+!         ("TransparentColor", "p_color", [0,0,0], True),
+!         ("TransparencyFactor", "p_number", 0, True),
+!         ("DisplacementColor", "p_color_rgb", [0,0,0]),
+!         ("DisplacementFactor", "p_double", 1),
+!         ("VectorDisplacementColor", "p_color_rgb", [0,0,0]),
+!         ("VectorDisplacementFactor", "p_double", 1),
+!         ("SpecularColor", "p_color", [0.2,0.2,0.2], True),
+!         ("SpecularFactor", "p_number", 1, True),
+!         ("ShininessExponent", "p_number", 20, True),
+!         ("ReflectionColor", "p_color", [0,0,0], True),
+!         ("ReflectionFactor", "p_number", 1, True)
+      ]
+  
+      properties_tex = [
+!         ("TextureTypeUse", "p_enum", 0),
+!         ("Texture alpha", "p_number", 1, True),
+!         ("CurrentMappingType", "p_enum", 0),
+!         ("WrapModeU", "p_enum", 0),
+!         ("WrapModeV", "p_enum", 0),
+!         ("UVSwap", "p_bool", 0),
+!         ("PremultiplyAlpha", "p_bool", 1),
+!         ("Translation", "p_vector", [0,0,0], True),
+!         ("Rotation", "p_vector", [0,0,0], True),
+!         ("Scaling", "p_vector", [1,1,1], True),
+!         ("TextureRotationPivot", "p_vector_3d", [0,0,0]),
+!         ("TextureScalingPivot", "p_vector_3d", [0,0,0]),
+!         ("CurrentTextureBlendMode", "p_enum", 1),
+!         ("UVSet", "p_string", "default"),
+!         ("UseMaterial", "p_bool", 0),
+!         ("UseMipMap", "p_bool", 0)
+      ]
+  
+      properties_vid = [
+!         ("ImageSequence", "p_bool", 0),
+!         ("ImageSequenceOffset", "p_integer", 0),
+!         ("FrameRate", "p_double", 0),
+!         ("LastFrame", "p_integer", 0),
+!         ("Width", "p_integer", 0),
+!         ("Height", "p_integer", 0),
+!         ("Path", "p_string_xrefurl", ""),
+!         ("StartFrame", "p_integer", 0),
+!         ("StopFrame", "p_integer", 0),
+!         ("PlaySpeed", "p_double", 0),
+!         ("Offset", "p_timestamp", 0),
+!         ("InterlaceMode", "p_enum", 0),
+!         ("FreeRunning", "p_bool", 0),
+!         ("Loop", "p_bool", 0),
+!         ("AccessMode", "p_enum", 0)
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, "Material", nMaterials, "FbxSurfacePhong", properties_mat)
+!         fbx_binary.fbx_template_generate(elem, "Texture", nTextures, "FbxFileTexture", properties_tex)
+!         fbx_binary.fbx_template_generate(elem, "Video", nImages, "FbxVideo", properties_vid)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  """
+      ObjectType: "Material" {
+--- 85,171 ----
+      nMaterials,nTextures,nImages = getObjectNumbers(meshes)
+  
+      properties_mat = [
+!         (b"ShadingModel", ("Phong", "p_string", False)),
+!         (b"MultiLayer", (False, "p_bool", False)),
+!         # Lambert-specific.
+!         (b"EmissiveColor", ((0.0, 0.0, 0.0), "p_color", True)),
+!         (b"EmissiveFactor", (1.0, "p_number", True)),
+!         (b"AmbientColor", ((0.2, 0.2, 0.2), "p_color", True)),
+!         (b"AmbientFactor", (1.0, "p_number", True)),
+!         (b"DiffuseColor", ((0.8, 0.8, 0.8), "p_color", True)),
+!         (b"DiffuseFactor", (1.0, "p_number", True)),
+!         (b"TransparentColor", ((0.0, 0.0, 0.0), "p_color", True)),
+!         (b"TransparencyFactor", (0.0, "p_number", True)),
+!         (b"Opacity", (1.0, "p_number", True)),
+!         (b"NormalMap", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"Bump", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"BumpFactor", (1.0, "p_double", False)),
+!         (b"DisplacementColor", ((0.0, 0.0, 0.0), "p_color_rgb", False)),
+!         (b"DisplacementFactor", (1.0, "p_double", False)),
+!         (b"VectorDisplacementColor", ((0.0, 0.0, 0.0), "p_color_rgb", False)),
+!         (b"VectorDisplacementFactor", (1.0, "p_double", False)),
+!         # Phong-specific.
+!         (b"SpecularColor", ((0.2, 0.2, 0.2), "p_color", True)),
+!         (b"SpecularFactor", (1.0, "p_number", True)),
+!         # Not sure about the name, importer uses this (but ShininessExponent for tex prop name!)
+!         # And in fbx exported by sdk, you have one in template, the other in actual material!!! :/
+!         # For now, using both.
+!         (b"Shininess", (20.0, "p_number", True)),
+!         (b"ShininessExponent", (20.0, "p_number", True)),
+!         (b"ReflectionColor", ((0.0, 0.0, 0.0), "p_color", True)),
+!         (b"ReflectionFactor", (1.0, "p_number", True)),
+      ]
+  
+      properties_tex = [
+!         (b"TextureTypeUse", (0, "p_enum", False)),  # Standard.
+!         (b"AlphaSource", (2, "p_enum", False)),  # Black (i.e. texture's alpha), XXX name guessed!.
+!         (b"Texture alpha", (1.0, "p_double", False)),
+!         (b"PremultiplyAlpha", (True, "p_bool", False)),
+!         (b"CurrentTextureBlendMode", (1, "p_enum", False)),  # Additive...
+!         (b"CurrentMappingType", (0, "p_enum", False)),  # UV.
+!         (b"UVSet", ("default", "p_string", False)),  # UVMap name.
+!         (b"WrapModeU", (0, "p_enum", False)),  # Repeat.
+!         (b"WrapModeV", (0, "p_enum", False)),  # Repeat.
+!         (b"UVSwap", (False, "p_bool", False)),
+!         (b"Translation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"Rotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"Scaling", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
+!         (b"TextureRotationPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"TextureScalingPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         # Not sure about those two...
+!         (b"UseMaterial", (False, "p_bool", False)),
+!         (b"UseMipMap", (False, "p_bool", False)),
+      ]
+  
+      properties_vid = [
+!         (b"Width", (0, "p_integer", False)),
+!         (b"Height", (0, "p_integer", False)),
+!         (b"Path", ("", "p_string_url", False)),
+!         (b"AccessMode", (0, "p_enum", False)),  # Disk (0=Disk, 1=Mem, 2=DiskAsync).
+!         # All videos.
+!         (b"StartFrame", (0, "p_integer", False)),
+!         (b"StopFrame", (0, "p_integer", False)),
+!         (b"Offset", (0, "p_timestamp", False)),
+!         (b"PlaySpeed", (0.0, "p_double", False)),
+!         (b"FreeRunning", (False, "p_bool", False)),
+!         (b"Loop", (False, "p_bool", False)),
+!         (b"InterlaceMode", (0, "p_enum", False)),  # None, i.e. progressive.
+!         # Image sequences.
+!         (b"ImageSequence", (False, "p_bool", False)),
+!         (b"ImageSequenceOffset", (0, "p_integer", False)),
+!         (b"FrameRate", (0.0, "p_double", False)),
+!         (b"LastFrame", (0, "p_integer", False)),
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, b"Material", nMaterials, b"FbxSurfacePhong", properties_mat)
+!         fbx_binary.fbx_template_generate(elem, b"Texture", nTextures, b"FbxFileTexture", properties_tex)
+!         fbx_binary.fbx_template_generate(elem, b"Video", nImages, b"FbxVideo", properties_vid)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  """
+      ObjectType: "Material" {
+***************
+*** 215,239 ****
+  
+      mat = mesh.material
+      properties = [
+!         ("DiffuseColor", "p_color", mat.diffuseColor.asTuple(), b"A"),
+!         ("Diffuse", "p_vector_3d", mat.diffuseColor.asTuple(), b"A"),
+!         ("SpecularColor", "p_color", mat.specularColor.asTuple(), b"A"),
+!         ("Specular", "p_vector_3d", mat.specularColor.asTuple(), b"A"),
+!         ("Shininess", "p_double", mat.shininess, b"A"),
+!         ("Reflectivity", "p_double", 0, b"A"),
+!         ("Emissive", "p_vector_3d", mat.emissiveColor.asTuple(), b"A"),
+!         ("Ambient", "p_vector_3d", mat.ambientColor.asTuple(), b"A"),
+!         ("TransparencyFactor", "p_number", mat.transparencyMapIntensity, True, b"A"),
+!         ("Opacity", "p_double", mat.opacity, b"A")
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Objects')
+!         fbx_binary.fbx_data_material(elem, key, id, properties)
+          return
+  
+!     import fbx_utils
+  
+      fp.write(
+  '    Material: %d, "%s", "" {' % (id, key) + """
+--- 226,250 ----
+  
+      mat = mesh.material
+      properties = [
+!         (b"DiffuseColor", "p_color", mat.diffuseColor.asTuple(), b"A"),
+!         (b"Diffuse", "p_vector_3d", mat.diffuseColor.asTuple(), b"A"),
+!         (b"SpecularColor", "p_color", mat.specularColor.asTuple(), b"A"),
+!         (b"Specular", "p_vector_3d", mat.specularColor.asTuple(), b"A"),
+!         (b"Shininess", "p_double", mat.shininess, b"A"),
+!         (b"Reflectivity", "p_double", 0.0, b"A"),
+!         (b"Emissive", "p_vector_3d", mat.emissiveColor.asTuple(), b"A"),
+!         (b"Ambient", "p_vector_3d", mat.ambientColor.asTuple(), b"A"),
+!         (b"TransparencyFactor", "p_number", mat.transparencyMapIntensity, True, b"A"),
+!         (b"Opacity", "p_double", mat.opacity, b"A")
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Objects')
+!         fbx_binary.fbx_data_material(elem, bytes(key, 'utf-8'), id, properties)
+          return
+  
+!     from . import fbx_utils
+  
+      fp.write(
+  '    Material: %d, "%s", "" {' % (id, key) + """
+***************
+*** 258,268 ****
+      tid,tkey = getId("Texture::%s" % texname)
+  
+      properties_vid = [
+!         ("Path", "p_string_url", filepath)
+      ]
+  
+      properties_tex = [
+!         ("MHName", "p_string", tkey, False, True)
+      ]
+  
+      if config.binary:
+--- 269,279 ----
+      tid,tkey = getId("Texture::%s" % texname)
+  
+      properties_vid = [
+!         (b"Path", "p_string_url", filepath)
+      ]
+  
+      properties_tex = [
+!         (b"MHName", "p_string", tkey, False, True)
+      ]
+  
+      if config.binary:
+***************
+*** 271,277 ****
+          fbx_binary.fbx_data_texture_file_element(elem, tkey, tid, vkey, vid, filepath, relpath, properties_tex, properties_vid)
+          return
+  
+!     import fbx_utils
+  
+      fp.write(
+  '    Video: %d, "%s", "Clip" {' % (vid, vkey) + """
+--- 282,288 ----
+          fbx_binary.fbx_data_texture_file_element(elem, tkey, tid, vkey, vid, filepath, relpath, properties_tex, properties_vid)
+          return
+  
+!     from . import fbx_utils
+  
+      fp.write(
+  '    Video: %d, "%s", "Clip" {' % (vid, vkey) + """
+***************
+*** 315,327 ****
+  
+          mat = mesh.material
+          for filepath,channel in [
+!             (mat.diffuseTexture, "DiffuseColor"),
+!             (mat.diffuseTexture, "TransparencyFactor"),
+!             (mat.specularMapTexture, "SpecularIntensity"),
+!             (mat.normalMapTexture, "Bump"),
+!             (mat.transparencyMapTexture, "TransparencyFactor"),
+!             (mat.bumpMapTexture, "BumpFactor"),
+!             (mat.displacementMapTexture, "Displacement")]:
+              if filepath:
+                  texname = getTextureName(filepath)
+                  opLink(fp, 'Texture::%s' % texname, 'Material::%s' % mesh.name, channel, config)
+--- 326,338 ----
+  
+          mat = mesh.material
+          for filepath,channel in [
+!             (mat.diffuseTexture, b"DiffuseColor"),
+!             (mat.diffuseTexture, b"TransparencyFactor"),
+!             (mat.specularMapTexture, b"SpecularIntensity"),
+!             (mat.normalMapTexture, b"Bump"),
+!             (mat.transparencyMapTexture, b"TransparencyFactor"),
+!             (mat.bumpMapTexture, b"BumpFactor"),
+!             (mat.displacementMapTexture, b"Displacement")]:
+              if filepath:
+                  texname = getTextureName(filepath)
+                  opLink(fp, 'Texture::%s' % texname, 'Material::%s' % mesh.name, channel, config)
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_mesh.py 9_export_fbx/fbx_mesh.py
+*** 9_export_fbx_bitbucket_stable/fbx_mesh.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_mesh.py	2018-10-11 13:49:34.202310955 +0200
+***************
+*** 53,73 ****
+      nMeshes = len(meshes)
+  
+      properties = [
+!         ("Color",   "p_color_rgb",      [0.8,0.8,0.8]),
+!         ("BBoxMin", "p_vector_3d",      [0,0,0]),
+!         ("BBoxMax", "p_vector_3d",      [0,0,0]),
+!         ("Primary Visibility", "p_bool", True),
+!         ("Casts Shadows", "p_bool",     True),
+!         ("Receive Shadows", "p_bool",   True)
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, "Geometry", (nMeshes + nShapes), "FbxMesh", properties)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  '    ObjectType: "Geometry" {\n' +
+  '       Count: %d' % (nMeshes + nShapes) +
+--- 53,73 ----
+      nMeshes = len(meshes)
+  
+      properties = [
+!         (b"Color", ((0.8, 0.8, 0.8), "p_color_rgb", False)),
+!         (b"BBoxMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"BBoxMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"Primary Visibility", (True, "p_bool", False)),
+!         (b"Casts Shadows", (True, "p_bool", False)),
+!         (b"Receive Shadows", (True, "p_bool", False))
+      ]
+  
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, b"Geometry", (nMeshes + nShapes), b"FbxMesh", properties)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  '    ObjectType: "Geometry" {\n' +
+  '       Count: %d' % (nMeshes + nShapes) +
+***************
+*** 98,104 ****
+      coord = mesh.coord + config.offset
+  
+      properties = [
+!         ("MHName", "p_string", "%sMesh" % mesh.name, False, True)
+      ]
+  
+      if config.binary:
+--- 98,104 ----
+      coord = mesh.coord + config.offset
+  
+      properties = [
+!         (b"MHName", "p_string", "%sMesh" % mesh.name, False, True)
+      ]
+  
+      if config.binary:
+***************
+*** 113,119 ****
+      else:
+          indexString = ",".join( ['%d,%d,%d' % (fv[0],fv[1],-1-fv[2]) for fv in mesh.fvert] )
+  
+!     import fbx_utils
+      fp.write(
+          '    Geometry: %d, "%s", "Mesh" {\n' % (id, key) +
+          '        Properties70:  {\n' +
+--- 113,119 ----
+      else:
+          indexString = ",".join( ['%d,%d,%d' % (fv[0],fv[1],-1-fv[2]) for fv in mesh.fvert] )
+  
+!     from . import fbx_utils
+      fp.write(
+          '    Geometry: %d, "%s", "Mesh" {\n' % (id, key) +
+          '        Properties70:  {\n' +
+***************
+*** 233,241 ****
+          uvString.append(",".join( ['%.4f,%.4f' % (tuple(mesh.texco[vt])) for vt in fuv] ))
+      uvString = ",".join(uvString)
+      if mesh.vertsPerPrimitive == 4:
+!         indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in xrange(nUvFaces)] )
+      else:
+!         indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in xrange(nUvFaces)] )
+  
+      fp.write(
+          '        LayerElementUV: 0 {\n' +
+--- 233,241 ----
+          uvString.append(",".join( ['%.4f,%.4f' % (tuple(mesh.texco[vt])) for vt in fuv] ))
+      uvString = ",".join(uvString)
+      if mesh.vertsPerPrimitive == 4:
+!         indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in range(nUvFaces)] )
+      else:
+!         indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in range(nUvFaces)] )
+  
+      fp.write(
+          '        LayerElementUV: 0 {\n' +
+***************
+*** 260,270 ****
+      id,key = getId("Model::%sMesh" % mesh.name)
+  
+      properties = [
+!         ("RotationActive", "p_bool", 1),
+!         ("InheritType", "p_enum", 1),
+!         ("ScalingMax", "p_vector_3d", [0,0,0]),
+!         ("DefaultAttributeIndex", "p_integer", 0),
+!         ("MHName", "p_string", mesh.name, False, True)
+      ]
+  
+      if config.binary:
+--- 260,270 ----
+      id,key = getId("Model::%sMesh" % mesh.name)
+  
+      properties = [
+!         (b"RotationActive", "p_bool", 1),
+!         (b"InheritType", "p_enum", 1),
+!         (b"ScalingMax", "p_vector_3d", [0.0,0.0,0.0]),
+!         (b"DefaultAttributeIndex", "p_integer", 0),
+!         (b"MHName", "p_string", mesh.name, False, True)
+      ]
+  
+      if config.binary:
+***************
+*** 273,279 ****
+          fbx_binary.fbx_data_model_element(elem, key, id, properties)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  '    Model: %d, "%s", "Mesh" {' % (id, key) +
+  """
+--- 273,279 ----
+          fbx_binary.fbx_data_model_element(elem, key, id, properties)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  '    Model: %d, "%s", "Mesh" {' % (id, key) +
+  """
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_skeleton.py 9_export_fbx/fbx_skeleton.py
+*** 9_export_fbx_bitbucket_stable/fbx_skeleton.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_skeleton.py	2018-10-11 13:33:35.325163404 +0200
+***************
+*** 61,137 ****
+  
+      # (name, ptype, value, animatable, custom)
+      properties = [
+!         ("QuaternionInterpolate", "p_enum", 0),
+!         ("RotationOffset",  "p_vector_3d",  [0,0,0]),
+!         ("RotationPivot",   "p_vector_3d",  [0,0,0]),
+!         ("ScalingOffset",   "p_vector_3d",  [0,0,0]),
+!         ("ScalingPivot",    "p_vector_3d",  [0,0,0]),
+!         ("TranslationActive", "p_bool",     0),
+!         ("TranslationMin",  "p_vector_3d",  [0,0,0]),
+!         ("TranslationMax",  "p_vector_3d",  [0,0,0]),
+!         ("TranslationMinX", "p_bool",       0),
+!         ("TranslationMinY", "p_bool",       0),
+!         ("TranslationMinZ", "p_bool",       0),
+!         ("TranslationMaxX", "p_bool",       0),
+!         ("TranslationMaxY", "p_bool",       0),
+!         ("TranslationMaxZ", "p_bool",       0),
+!         ("RotationOrder",   "p_enum",       0),
+!         ("RotationSpaceForLimitOnly", "p_bool", 0),
+!         ("RotationStiffnessX", "p_double",  0),
+!         ("RotationStiffnessY", "p_double",  0),
+!         ("RotationStiffnessZ", "p_double",  0),
+!         ("AxisLen",         "p_double",     10),
+!         ("PreRotation",     "p_vector_3d",  [0,0,0]),
+!         ("PostRotation",    "p_vector_3d",  [0,0,0]),
+!         ("RotationActive",  "p_bool",       0),
+!         ("RotationMin",     "p_vector_3d",  [0,0,0]),
+!         ("RotationMax",     "p_vector_3d",  [0,0,0]),
+!         ("RotationMinX",    "p_bool",       0),
+!         ("RotationMinY",    "p_bool",       0),
+!         ("RotationMinZ",    "p_bool",       0),
+!         ("RotationMaxX",    "p_bool",       0),
+!         ("RotationMaxY",    "p_bool",       0),
+!         ("RotationMaxZ",    "p_bool",       0),
+!         ("InheritType",     "p_enum",       0),
+!         ("ScalingActive",   "p_bool",       0),
+!         ("ScalingMin",      "p_vector_3d",  [0,0,0]),
+!         ("ScalingMax",      "p_vector_3d",  [1,1,1]),
+!         ("ScalingMinX",     "p_bool",       0),
+!         ("ScalingMinY",     "p_bool",       0),
+!         ("ScalingMinZ",     "p_bool",       0),
+!         ("ScalingMaxX",     "p_bool",       0),
+!         ("ScalingMaxY",     "p_bool",       0),
+!         ("ScalingMaxZ",     "p_bool",       0),
+!         ("GeometricTranslation", "p_vector_3d", [0,0,0]),
+!         ("GeometricRotation", "p_vector_3d", [0,0,0]),
+!         ("GeometricScaling", "p_vector_3d", [1,1,1]),
+!         ("MinDampRangeX",   "p_double",     0),
+!         ("MinDampRangeY",   "p_double",     0),
+!         ("MinDampRangeZ",   "p_double",     0),
+!         ("MaxDampRangeX",   "p_double",     0),
+!         ("MaxDampRangeY",   "p_double",     0),
+!         ("MaxDampRangeZ",   "p_double",     0),
+!         ("MinDampStrengthX", "p_double",    0),
+!         ("MinDampStrengthY", "p_double",    0),
+!         ("MinDampStrengthZ", "p_double",    0),
+!         ("MaxDampStrengthX", "p_double",    0),
+!         ("MaxDampStrengthY", "p_double",    0),
+!         ("MaxDampStrengthZ", "p_double",    0),
+!         ("PreferedAngleX",  "p_double",     0),
+!         ("PreferedAngleY",  "p_double",     0),
+!         ("PreferedAngleZ",  "p_double",     0),
+!         ("LookAtProperty",  "p_object",     None),
+!         ("UpVectorProperty", "p_object",    None),
+!         ("Show",            "p_bool",       1),
+!         ("NegativePercentShapeSupport", "p_bool", 1),
+!         ("DefaultAttributeIndex", "p_integer", -1),
+!         ("Freeze",          "p_bool",       0),
+!         ("LODBox",          "p_bool",       0),
+!         ("Lcl Translation", "p_lcl_translation", [0,0,0], True),
+!         ("Lcl Rotation",    "p_lcl_rotation", [0,0,0],  True),
+!         ("Lcl Scaling",     "p_lcl_scaling", [1,1,1],   True),
+!         ("Visibility",      "p_visibility", 1,          True),
+!         ("Visibility Inheritance", "p_visibility_inheritance", 1)
+      ]
+  
+      skel_properties = [
+--- 61,137 ----
+  
+      # (name, ptype, value, animatable, custom)
+      properties = [
+!         (b"QuaternionInterpolate", (0, "p_enum", False)),  # 0 = no quat interpolation.
+!         (b"RotationOffset", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"RotationPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"ScalingOffset", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"ScalingPivot", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"TranslationActive", (False, "p_bool", False)),
+!         (b"TranslationMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"TranslationMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"TranslationMinX", (False, "p_bool", False)),
+!         (b"TranslationMinY", (False, "p_bool", False)),
+!         (b"TranslationMinZ", (False, "p_bool", False)),
+!         (b"TranslationMaxX", (False, "p_bool", False)),
+!         (b"TranslationMaxY", (False, "p_bool", False)),
+!         (b"TranslationMaxZ", (False, "p_bool", False)),
+!         (b"RotationOrder", (0, "p_enum", False)),  # we always use 'XYZ' order.
+!         (b"RotationSpaceForLimitOnly", (False, "p_bool", False)),
+!         (b"RotationStiffnessX", (0.0, "p_double", False)),
+!         (b"RotationStiffnessY", (0.0, "p_double", False)),
+!         (b"RotationStiffnessZ", (0.0, "p_double", False)),
+!         (b"AxisLen", (10.0, "p_double", False)),
+!         (b"PreRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"PostRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"RotationActive", (False, "p_bool", False)),
+!         (b"RotationMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"RotationMax", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"RotationMinX", (False, "p_bool", False)),
+!         (b"RotationMinY", (False, "p_bool", False)),
+!         (b"RotationMinZ", (False, "p_bool", False)),
+!         (b"RotationMaxX", (False, "p_bool", False)),
+!         (b"RotationMaxY", (False, "p_bool", False)),
+!         (b"RotationMaxZ", (False, "p_bool", False)),
+!         (b"InheritType", (0, "p_enum", False)),  # RrSs
+!         (b"ScalingActive", (False, "p_bool", False)),
+!         (b"ScalingMin", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"ScalingMax", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
+!         (b"ScalingMinX", (False, "p_bool", False)),
+!         (b"ScalingMinY", (False, "p_bool", False)),
+!         (b"ScalingMinZ", (False, "p_bool", False)),
+!         (b"ScalingMaxX", (False, "p_bool", False)),
+!         (b"ScalingMaxY", (False, "p_bool", False)),
+!         (b"ScalingMaxZ", (False, "p_bool", False)),
+!         (b"GeometricTranslation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"GeometricRotation", ((0.0, 0.0, 0.0), "p_vector_3d", False)),
+!         (b"GeometricScaling", ((1.0, 1.0, 1.0), "p_vector_3d", False)),
+!         (b"MinDampRangeX", (0.0, "p_double", False)),
+!         (b"MinDampRangeY", (0.0, "p_double", False)),
+!         (b"MinDampRangeZ", (0.0, "p_double", False)),
+!         (b"MaxDampRangeX", (0.0, "p_double", False)),
+!         (b"MaxDampRangeY", (0.0, "p_double", False)),
+!         (b"MaxDampRangeZ", (0.0, "p_double", False)),
+!         (b"MinDampStrengthX", (0.0, "p_double", False)),
+!         (b"MinDampStrengthY", (0.0, "p_double", False)),
+!         (b"MinDampStrengthZ", (0.0, "p_double", False)),
+!         (b"MaxDampStrengthX", (0.0, "p_double", False)),
+!         (b"MaxDampStrengthY", (0.0, "p_double", False)),
+!         (b"MaxDampStrengthZ", (0.0, "p_double", False)),
+!         (b"PreferedAngleX", (0.0, "p_double", False)),
+!         (b"PreferedAngleY", (0.0, "p_double", False)),
+!         (b"PreferedAngleZ", (0.0, "p_double", False)),
+!         (b"LookAtProperty", (None, "p_object", False)),
+!         (b"UpVectorProperty", (None, "p_object", False)),
+!         (b"Show", (True, "p_bool", False)),
+!         (b"NegativePercentShapeSupport", (True, "p_bool", False)),
+!         (b"DefaultAttributeIndex", (-1, "p_integer", False)),
+!         (b"Freeze", (False, "p_bool", False)),
+!         (b"LODBox", (False, "p_bool", False)),
+!         (b"Lcl Translation", ((0.0, 0.0, 0.0), "p_lcl_translation", True)),
+!         (b"Lcl Rotation", ((0.0, 0.0, 0.0), "p_lcl_rotation", True)),
+!         (b"Lcl Scaling", ((1.0, 1.0, 1.0), "p_lcl_scaling", True)),
+!         (b"Visibility", (1.0, "p_visibility", True)),
+!         (b"Visibility Inheritance", (1, "p_visibility_inheritance", False))
+      ]
+  
+      skel_properties = [
+***************
+*** 143,155 ****
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, "Model", nModels, "FbxNode", properties)
+  
+          if skel:
+!             fbx_binary.fbx_template_generate(elem, "NodeAttribute", nBones, "FbxSkeleton", skel_properties)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  """
+      ObjectType: "Model" {
+--- 143,155 ----
+      if config.binary:
+          from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Definitions')
+!         fbx_binary.fbx_template_generate(elem, b"Model", nModels, b"FbxNode", properties)
+  
+          if skel:
+!             fbx_binary.fbx_template_generate(elem, b"NodeAttribute", nBones, b"FbxSkeleton", skel_properties)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  """
+      ObjectType: "Model" {
+***************
+*** 206,212 ****
+          fbx_binary.fbx_data_skeleton_bone_node(elem, key, id, properties)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  '    NodeAttribute: %d, "%s", "LimbNode" {' % (id, key) + """
+          Properties70:  {
+--- 206,212 ----
+          fbx_binary.fbx_data_skeleton_bone_node(elem, key, id, properties)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  '    NodeAttribute: %d, "%s", "LimbNode" {' % (id, key) + """
+          Properties70:  {
+***************
+*** 221,230 ****
+      id,key = getId("Model::%s" % skel.name)
+  
+      properties = [
+!         ("RotationActive",  "p_bool",       1),
+!         ("InheritType",     "p_enum",       1),
+!         ("ScalingMax",      "p_vector_3d",  [0,0,0]),
+!         ("MHName",          "p_string",     skel.name, False, True)
+      ]
+  
+      if config.binary:
+--- 221,230 ----
+      id,key = getId("Model::%s" % skel.name)
+  
+      properties = [
+!         (b"RotationActive",  "p_bool",       1),
+!         (b"InheritType",     "p_enum",       1),
+!         (b"ScalingMax",      "p_vector_3d",  [0,0,0]),
+!         (b"MHName",          "p_string",     skel.name, False, True)
+      ]
+  
+      if config.binary:
+***************
+*** 233,239 ****
+          fbx_binary.fbx_data_skeleton_model(elem, key, id, properties)
+          return
+  
+!     import fbx_utils
+      fp.write(
+  '    Model: %d, "%s", "Null" {' % (id, key) +
+  """
+--- 233,239 ----
+          fbx_binary.fbx_data_skeleton_model(elem, key, id, properties)
+          return
+  
+!     from . import fbx_utils
+      fp.write(
+  '    Model: %d, "%s", "Null" {' % (id, key) +
+  """
+***************
+*** 248,254 ****
+  
+  
+  def writeBoneProp(fp, bone, config):
+!     import fbx_utils
+      id,key = getId("Model::%s" % bone.name)
+  
+      mat = bone.getRelativeMatrix(config.meshOrientation, config.localBoneAxis, config.offset)
+--- 248,254 ----
+  
+  
+  def writeBoneProp(fp, bone, config):
+!     from . import fbx_utils
+      id,key = getId("Model::%s" % bone.name)
+  
+      mat = bone.getRelativeMatrix(config.meshOrientation, config.localBoneAxis, config.offset)
+***************
+*** 256,269 ****
+      e = tm.euler_from_matrix(mat, axes='sxyz')
+  
+      properties = [
+!         ("RotationActive",  "p_bool",       1),
+!         ("InheritType",     "p_enum",       1),
+!         ("ScalingMax",      "p_vector_3d",  [0,0,0]),
+!         ("DefaultAttributeIndex", "p_integer",  0),
+!         ("Lcl Translation", "p_lcl_translation", list(trans), True),
+!         ("Lcl Rotation",    "p_lcl_rotation", [e[0]*R, e[1]*R, e[2]*R], True),
+!         ("Lcl Scaling",     "p_lcl_scaling",  [1,1,1], True),
+!         ("MHName",          "p_string",     bone.name, False, True),
+      ]
+  
+      if config.binary:
+--- 256,269 ----
+      e = tm.euler_from_matrix(mat, axes='sxyz')
+  
+      properties = [
+!         (b"RotationActive",  "p_bool",       1),
+!         (b"InheritType",     "p_enum",       1),
+!         (b"ScalingMax",      "p_vector_3d",  [0,0,0]),
+!         (b"DefaultAttributeIndex", "p_integer",  0),
+!         (b"Lcl Translation", "p_lcl_translation", list(trans), True),
+!         (b"Lcl Rotation",    "p_lcl_rotation", [e[0]*R, e[1]*R, e[2]*R], True),
+!         (b"Lcl Scaling",     "p_lcl_scaling",  [1,1,1], True),
+!         (b"MHName",          "p_string",     bone.name, False, True),
+      ]
+  
+      if config.binary:
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_utils_bin.py 9_export_fbx/fbx_utils_bin.py
+*** 9_export_fbx_bitbucket_stable/fbx_utils_bin.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_utils_bin.py	2018-10-11 13:46:51.812812539 +0200
+***************
+*** 24,36 ****
+  
+  
+  import math
+! 
+  from collections import namedtuple, OrderedDict
+- 
+- 
+  from . import encode_bin, data_types
+  
+- 
+  # "Constants"
+  FBX_VERSION = 7300
+  FBX_HEADER_VERSION = 1003
+--- 24,33 ----
+  
+  
+  import math
+! import log
+  from collections import namedtuple, OrderedDict
+  from . import encode_bin, data_types
+  
+  # "Constants"
+  FBX_VERSION = 7300
+  FBX_HEADER_VERSION = 1003
+***************
+*** 285,291 ****
+--- 282,296 ----
+  
+  
+  def _elem_data_single(elem, name, value, func_name):
++     log.debug(elem)
++     log.debug(type(elem))
++     log.debug(name)
++     log.debug(type(name))
++     log.debug(value)
++     log.debug(type(value))
+      sub_elem = elem_empty(elem, name)
++     log.debug(sub_elem)
++     log.debug(type(sub_elem))
+      getattr(sub_elem, func_name)(value)
+      return sub_elem
+  
+***************
+*** 458,463 ****
+--- 463,474 ----
+      elif len(ptype) > 3:
+          # We assume value is iterable, else it's a bug!
+          for callback, val in zip(ptype[2:], value):
++             log.debug(p)
++             log.debug(type(p))
++             log.debug(callback)
++             log.debug(type(callback))
++             log.debug(val)
++             log.debug(type(val))
+              getattr(p, callback)(val)
+  
+  
+***************
+*** 575,580 ****
+  
+  def fbx_name_class(name, cls=None):
+      if cls is None:
+!         cls,name = name.split('::')
+      return FBX_NAME_CLASS_SEP.join((name, cls))
+  
+--- 586,596 ----
+  
+  def fbx_name_class(name, cls=None):
+      if cls is None:
+!         cls,name = name.split(b'::')
+!     log.debug(cls)
+!     log.debug(type(cls))
+!     log.debug(name)
+!     log.debug(type(name))
+!     log.debug(type(FBX_NAME_CLASS_SEP))
+      return FBX_NAME_CLASS_SEP.join((name, cls))
+  
+diff -Nbrc 9_export_fbx_bitbucket_stable/fbx_utils.py 9_export_fbx/fbx_utils.py
+*** 9_export_fbx_bitbucket_stable/fbx_utils.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/fbx_utils.py	2018-10-11 11:27:15.074658673 +0200
+***************
+*** 137,143 ****
+      pid,_ = getId(parent)
+  
+      if config.binary:
+!         import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Connections')
+          fbx_binary.elem_connection(elem, b"OO", cid, pid)
+          return
+--- 137,143 ----
+      pid,_ = getId(parent)
+  
+      if config.binary:
+!         from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Connections')
+          fbx_binary.elem_connection(elem, b"OO", cid, pid)
+          return
+***************
+*** 153,159 ****
+      pid,_ = getId(parent)
+  
+      if config.binary:
+!         import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Connections')
+          fbx_binary.elem_connection(elem, b"OP", cid, pid, channel)
+          return
+--- 153,159 ----
+      pid,_ = getId(parent)
+  
+      if config.binary:
+!         from . import fbx_binary
+          elem = fbx_binary.get_child_element(fp, 'Connections')
+          fbx_binary.elem_connection(elem, b"OP", cid, pid, channel)
+          return
+diff -Nbrc 9_export_fbx_bitbucket_stable/mh2fbx.py 9_export_fbx/mh2fbx.py
+*** 9_export_fbx_bitbucket_stable/mh2fbx.py	2018-01-02 13:47:50.000000000 +0100
+--- 9_export_fbx/mh2fbx.py	2018-10-11 11:26:36.539182478 +0200
+***************
+*** 95,101 ****
+      G.app.progress(0.5, text="Exporting %s" % filepath)
+  
+      if config.binary:
+!         import fbx_binary
+          root = fbx_binary.elem_empty(None, b"")
+          fp = root
+      else:
+--- 95,101 ----
+      G.app.progress(0.5, text="Exporting %s" % filepath)
+  
+      if config.binary:
+!         from . import fbx_binary
+          root = fbx_binary.elem_empty(None, b"")
+          fp = root
+      else:
+***************
+*** 178,184 ****
+      # TODO support binary FBX export
+      fbx_anim.writeTakes(fp, action, config)
+      if config.binary:
+!         import encode_bin
+          root = fp
+          encode_bin.write(filepath, root)
+      else:
+--- 178,184 ----
+      # TODO support binary FBX export
+      fbx_anim.writeTakes(fp, action, config)
+      if config.binary:
+!         from . import encode_bin
+          root = fp
+          encode_bin.write(filepath, root)
+      else:
