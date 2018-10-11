@@ -24,7 +24,7 @@ import array
 import datetime
 import log
 
-from fbx_utils import *
+from .fbx_utils import *
 
 # Units convertors!
 convert_sec_to_ktime = units_convertor("second", "ktime")
