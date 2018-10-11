@@ -233,9 +233,9 @@ def writeUvs2(fp, mesh):
         uvString.append(",".join( ['%.4f,%.4f' % (tuple(mesh.texco[vt])) for vt in fuv] ))
     uvString = ",".join(uvString)
     if mesh.vertsPerPrimitive == 4:
-        indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in xrange(nUvFaces)] )
+        indexString = ",".join( ['%d,%d,%d,%d' % (4*n,4*n+1,4*n+2,4*n+3) for n in range(nUvFaces)] )
     else:
-        indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in xrange(nUvFaces)] )
+        indexString = ",".join( ['%d,%d,%d' % (4*n,4*n+1,4*n+2) for n in range(nUvFaces)] )
 
     fp.write(
         '        LayerElementUV: 0 {\n' +
