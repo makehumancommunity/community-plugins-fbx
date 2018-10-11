@@ -1,7 +1,7 @@
-*** io_scene_fbx_blender_271/encode_bin.py	2014-06-16 14:01:52.000000000 +0200
---- 9_export_fbx/encode_bin.py	2018-01-02 13:47:50.000000000 +0100
+*** 9_export_fbx/encode_bin.py	2018-10-11 11:15:05.398026998 +0200
+--- 9_export_fbx_bitbucket_stable/encode_bin.py	2018-01-02 13:47:50.000000000 +0100
 ***************
-*** 16,29 ****
+*** 16,36 ****
   #
   # ##### END GPL LICENSE BLOCK #####
   
@@ -9,6 +9,8 @@
 - 
   # Script copyright (C) 2013 Campbell Barton
   
+! # Imported from blender version 2.79, then modified by MakeHuman
+! 
 ! try:
 !     from . import data_types
 ! except:
@@ -16,7 +18,12 @@
   
   from struct import pack
   import array
---- 16,25 ----
+  import zlib
+- import log
+  
+  _BLOCK_SENTINEL_LENGTH = 13
+  _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
+--- 16,29 ----
   #
   # ##### END GPL LICENSE BLOCK #####
   
@@ -27,18 +34,12 @@
   
   from struct import pack
   import array
-***************
-*** 45,50 ****
---- 41,47 ----
-  # Awful exceptions: those "classes" of elements seem to need block sentinel even when having no children and some props.
-  _ELEMS_ID_ALWAYS_BLOCK_SENTINEL = {b"AnimationStack", b"AnimationLayer"}
+  import zlib
   
-+ 
-  class FBXElem:
-      __slots__ = (
-          "id",
+  _BLOCK_SENTINEL_LENGTH = 13
+  _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
 ***************
-*** 66,107 ****
+*** 70,111 ****
           self._props_length = -1
   
       def add_bool(self, data):
@@ -131,7 +132,7 @@
   
           self.props_type.append(data_types.FLOAT64)
 ***************
-*** 115,120 ****
+*** 119,124 ****
 --- 118,127 ----
           self.props.append(data)
   
@@ -144,7 +145,7 @@
           data = pack('<I', len(data)) + data
   
 ***************
-*** 122,128 ****
+*** 126,132 ****
           self.props.append(data)
   
       def add_string_unicode(self, data):
@@ -161,7 +162,7 @@
           data = pack('<I', len(data)) + data
   
 ***************
-*** 138,152 ****
+*** 142,156 ****
           if _IS_BIG_ENDIAN:
               data = data[:]
               data.byteswap()
@@ -195,7 +196,7 @@
           comp_len = len(data)
   
 ***************
-*** 226,245 ****
+*** 230,244 ****
           assert(self._end_offset != -1)
           assert(self._props_length != -1)
   
@@ -211,12 +212,7 @@
           self._write_children(write, tell, is_last)
   
           if tell() != self._end_offset:
-              raise IOError("scope length not reached, "
-!                           "something is wrong (%d)" % (end_offset - tell()))
-  
-      def _write_children(self, write, tell, is_last):
-          if self.elems:
---- 234,267 ----
+--- 234,262 ----
           assert(self._end_offset != -1)
           assert(self._props_length != -1)
   
@@ -246,13 +242,8 @@
           self._write_children(write, tell, is_last)
   
           if tell() != self._end_offset:
-              raise IOError("scope length not reached, "
-!                           "something is wrong (%d)" % (self._end_offset - tell()))
-  
-      def _write_children(self, write, tell, is_last):
-          if self.elems:
 ***************
-*** 261,278 ****
+*** 265,282 ****
       ok = 0
       for elem in elem_root.elems:
           if elem.id == b'FileId':
@@ -295,32 +286,28 @@
               elem.add_string(_TIME_ID)
               ok += 1
 ***************
-*** 281,291 ****
+*** 285,295 ****
               break
   
       if ok != 2:
-!         print("Missing fields!")
+          log.debug("Missing fields!")
   
   
-! def write(fn, elem_root, version):
+  def write(fn, elem_root, version=None):
 !     assert(elem_root.id == b'')
   
-      with open(fn, 'wb') as f:
-          write = f.write
---- 307,322 ----
+      if version is None:
+          import fbx_utils
+--- 307,318 ----
               break
   
       if ok != 2:
-!         import log
-!         log.debug("Missing fields!")
-! 
++         import log
+          log.debug("Missing fields!")
   
-+ def write(fn, elem_root, version=None):
-+     assert(elem_root.id == b'')  # If this check fails the elem_root is not a root element
   
-!     if version is None:
-!         import fbx_utils
-!         version = fbx_utils.FBX_VERSION
+  def write(fn, elem_root, version=None):
+!     assert(elem_root.id == b'')  # If this check fails the elem_root is not a root element
   
-      with open(fn, 'wb') as f:
-          write = f.write
+      if version is None:
+          import fbx_utils
