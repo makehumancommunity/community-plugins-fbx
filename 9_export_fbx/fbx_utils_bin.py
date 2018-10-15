@@ -282,20 +282,23 @@ def elem_empty(elem, name):
 
 
 def _elem_data_single(elem, name, value, func_name):
-    log.debug(elem)
-    log.debug(type(elem))
-    log.debug(name)
-    log.debug(type(name))
-    log.debug(value)
-    log.debug(type(value))
+
     sub_elem = elem_empty(elem, name)
-    log.debug(sub_elem)
-    log.debug(type(sub_elem))
+
+    from . import fbx_utils
+    fbx_utils.debugWrite(name, "elem_data_single")
+    fbx_utils.debugWrite(value, "elem_data_single")
+
     getattr(sub_elem, func_name)(value)
     return sub_elem
 
 
 def _elem_data_vec(elem, name, value, func_name):
+
+    from . import fbx_utils
+    fbx_utils.debugWrite(name, "elem_data_single")
+    fbx_utils.debugWrite(value, "elem_data_single")
+
     sub_elem = elem_empty(elem, name)
     func = getattr(sub_elem, func_name)
     for v in value:
@@ -463,6 +466,12 @@ def _elem_props_set(elem, ptype, name, value, flags):
     elif len(ptype) > 3:
         # We assume value is iterable, else it's a bug!
         for callback, val in zip(ptype[2:], value):
+            log.debug(p)
+            log.debug(type(p))
+            log.debug(callback)
+            log.debug(type(callback))
+            log.debug(val)
+            log.debug(type(val))
             getattr(p, callback)(val)
 
 

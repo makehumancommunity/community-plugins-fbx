@@ -59,6 +59,9 @@ def exportFbx(filepath, config):
 
     log.message("Write FBX file %s" % filepath)
 
+    if hasattr(G.app, "mhapi"):
+        G.app.mhapi.utility.resetDebugWriter("FBX")
+
     filename = os.path.basename(filepath)
     name = config.goodName(os.path.splitext(filename)[0])
 
