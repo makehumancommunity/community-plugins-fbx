@@ -306,6 +306,7 @@ def _elem_data_vec(elem, name, value, func_name):
     return sub_elem
 
 def get_child_element(parentelem, name):
+    assert(isinstance(name, bytes))
     for child in parentelem.elems:
         if child.id == name:
             return child
