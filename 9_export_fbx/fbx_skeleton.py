@@ -202,7 +202,7 @@ def writeNodeAttributeProp(fp, bone, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_skeleton_bone_node(elem, key, id, properties)
         return
 
@@ -229,7 +229,7 @@ def writeNodeProp(fp, skel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_skeleton_model(elem, key, id, properties)
         return
 
@@ -268,7 +268,7 @@ def writeBoneProp(fp, bone, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_skeleton_bone_model(elem, key, id, properties)
         return
 

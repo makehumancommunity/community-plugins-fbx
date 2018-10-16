@@ -103,7 +103,7 @@ def writeGeometryProp(fp, mesh, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_mesh_element(elem, key, id, properties, coord, mesh.fvert, mesh.vnorm, mesh.texco, mesh.fuvs)
         return
 
@@ -269,7 +269,7 @@ def writeMeshProp(fp, mesh, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_model_element(elem, key, id, properties)
         return
 

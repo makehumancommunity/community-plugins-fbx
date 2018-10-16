@@ -143,7 +143,7 @@ def ooLink(fp, child, parent, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Connections')
+        elem = fbx_binary.get_child_element(fp, b'Connections')
         fbx_binary.elem_connection(elem, b"OO", cid, pid)
         return
 
@@ -159,7 +159,7 @@ def opLink(fp, child, parent, channel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Connections')
+        elem = fbx_binary.get_child_element(fp, b'Connections')
         fbx_binary.elem_connection(elem, b"OP", cid, pid, channel)
         return
 

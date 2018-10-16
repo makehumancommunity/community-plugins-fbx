@@ -232,7 +232,7 @@ def writeMaterial(fp, mesh, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_material(elem, bytes(key, 'utf-8'), id, properties)
         return
 
@@ -270,7 +270,7 @@ def writeTexture(fp, filepath, channel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_texture_file_element(elem, tkey, tid, vkey, vid, filepath, relpath, properties_tex, properties_vid)
         return
 

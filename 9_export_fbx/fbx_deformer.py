@@ -199,7 +199,7 @@ def writeDeformer(fp, name, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_deformer(elem, key, id, properties)
         return
 
@@ -224,7 +224,7 @@ def writeSubDeformer(fp, name, bone, weights, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         fbx_binary.fbx_data_subdeformer(elem, key, id, weights[0], weights[1], bindmat, bindinv)
         return
 
@@ -260,7 +260,7 @@ def writeBindPose(fp, meshes, skel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Objects')
+        elem = fbx_binary.get_child_element(fp, b'Objects')
         pelem = fbx_binary.fbx_data_bindpose_element(elem, key, id, count)
     else:
         fp.write(
