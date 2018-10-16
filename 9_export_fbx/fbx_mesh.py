@@ -63,7 +63,7 @@ def writeObjectDefs(fp, meshes, nShapes, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Definitions')
+        elem = fbx_binary.get_child_element(fp, b'Definitions')
         fbx_binary.fbx_template_generate(elem, b"Geometry", (nMeshes + nShapes), b"FbxMesh", properties)
         return
 

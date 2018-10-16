@@ -84,7 +84,7 @@ def writeObjectDefs(fp, meshes, skel, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Definitions')
+        elem = fbx_binary.get_child_element(fp, b'Definitions')
         if count > 0:
             fbx_binary.fbx_template_generate(elem, b"Deformer", count)
         if skel:

@@ -151,7 +151,7 @@ def writeObjectDefs(fp, meshes, config):
 
     if config.binary:
         from . import fbx_binary
-        elem = fbx_binary.get_child_element(fp, 'Definitions')
+        elem = fbx_binary.get_child_element(fp, b'Definitions')
         fbx_binary.fbx_template_generate(elem, b"Material", nMaterials, b"FbxSurfacePhong", properties_mat)
         fbx_binary.fbx_template_generate(elem, b"Texture", nTextures, b"FbxFileTexture", properties_tex)
         fbx_binary.fbx_template_generate(elem, b"Video", nImages, b"FbxVideo", properties_vid)
