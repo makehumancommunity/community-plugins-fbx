@@ -31,6 +31,7 @@ from struct import pack
 import array
 import zlib
 import log
+from core import G
 
 _BLOCK_SENTINEL_LENGTH = 13
 _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
@@ -227,17 +228,34 @@ class FBXElem:
         return offset
 
     def _write(self, write, tell, is_last):
-        assert(self._end_offset != -1)
-        assert(self._props_length != -1)
+        debugWrite("elem._write " + G.app.mhapi.utility.getValueAsString(self.id))
+
+        assert (self._end_offset != -1)
+        assert (self._props_length != -1)
+
+        btell = tell()
+        offset = 12  # 3 uints
 
         write(pack('<3I', self._end_offset, len(self.props), self._props_length))
+        # debugWrite(pack('<3I', self._end_offset, len(self.props), self._props_length))
 
-        write(bytes((len(self.id),)))
+        assert (tell() - btell == offset)
+        offset += 1 + len(self.id)  # len + idname
+
+        # write(bytes((len(self.id),)))
+        write(pack('<B', len(self.id)))  # String length is one byte
         write(self.id)
 
+        assert (tell() - btell == offset)
+
         for i, data in enumerate(self.props):
-            write(bytes((self.props_type[i],)))
+            # write(bytes((self.props_type[i],)))
+            write(pack('<B', self.props_type[i]))
             write(data)
+
+            # 1 byte for the prop type
+            offset += 1 + len(data)
+            assert (tell() - btell == offset)
 
         self._write_children(write, tell, is_last)
 
@@ -246,10 +264,11 @@ class FBXElem:
                           "something is wrong (%d)" % (self._end_offset - tell()))
 
     def _write_children(self, write, tell, is_last):
+        debugWrite("elem._write_children " + str(len(self.elems)))
         if self.elems:
             elem_last = self.elems[-1]
             for elem in self.elems:
-                assert(elem.id != b'')
+                assert (elem.id != b'')
                 elem._write(write, tell, (elem is elem_last))
             write(_BLOCK_SENTINEL_DATA)
         elif not self.props or self.id in _ELEMS_ID_ALWAYS_BLOCK_SENTINEL:
@@ -287,6 +306,26 @@ def _write_timedate_hack(elem_root):
     if ok != 2:
         log.debug("Missing fields!")
 
+def addChild(elem, indent):
+    i = indent
+    val = ""
+    while i > 0:
+        val = val + " "
+        i = i - 1
+    val = val + G.app.mhapi.utility.getValueAsString(elem.id) + "\n"
+    for child in elem.elems:
+        val = val + addChild(child, indent + 2)
+    return val
+
+def genTree(elem_root):
+    val = "ROOT\n"
+    for elem in elem_root.elems:
+        val = val + addChild(elem, 2)
+    return val
+
+def debugWrite(content, location = "generic"):
+    if hasattr(G.app, "mhapi"):
+        G.app.mhapi.utility.debugWrite(content, "FBX2", location)
 
 def write(fn, elem_root, version=None):
     assert(elem_root.id == b'')
@@ -295,12 +334,17 @@ def write(fn, elem_root, version=None):
         from . import fbx_utils
         version = fbx_utils.FBX_VERSION
 
+    G.app.mhapi.utility.resetDebugWriter("FBX2")
+    debugWrite(genTree(elem_root))
+
     with open(fn, 'wb') as f:
         write = f.write
         tell = f.tell
 
         write(_HEAD_MAGIC)
+        #debugWrite(_HEAD_MAGIC)
         write(pack('<I', version))
+        #debugWrite(pack('<I', version))
 
         # hack since we don't decode time.
         # ideally we would _not_ modify this data.
@@ -310,7 +354,9 @@ def write(fn, elem_root, version=None):
         elem_root._write_children(write, tell, False)
 
         write(_FOOT_ID)
+        #debugWrite(_FOOT_ID)
         write(b'\x00' * 4)
+        #debugWrite(b'\x00' * 4)
 
         # padding for alignment (values between 1 & 16 observed)
         # if already aligned to 16, add a full 16 bytes padding.

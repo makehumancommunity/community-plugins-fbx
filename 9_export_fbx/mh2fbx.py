@@ -50,6 +50,7 @@ from . import fbx_deformer
 from . import fbx_material
 from . import fbx_anim
 
+from .encode_bin import genTree
 
 def exportFbx(filepath, config):
     G.app.progress(0, text="Preparing")
@@ -134,22 +135,30 @@ def exportFbx(filepath, config):
 
     nVertexGroups, nShapes = fbx_deformer.getObjectCounts(meshes)
 
+    fbx_utils.debugWrite(genTree(fp))
+
     # 2) FBX template definitions
     # GlobalSettings template definition
     fbx_header.writeObjectDefs(fp, meshes, skel, action, config)
+    fbx_utils.debugWrite(genTree(fp))
     # Skeleton template definition
     fbx_skeleton.writeObjectDefs(fp, meshes, skel, config)
+    fbx_utils.debugWrite(genTree(fp))
     # Material template definition
     if config.useMaterials:
         fbx_material.writeObjectDefs(fp, meshes, config)
     # Objects template definition
     fbx_mesh.writeObjectDefs(fp, meshes, nShapes, config)
+    fbx_utils.debugWrite(genTree(fp))
     # Skin deformer template definition
     fbx_deformer.writeObjectDefs(fp, meshes, skel, config)
+    fbx_utils.debugWrite(genTree(fp))
     # Animation template definition
     if useAnim:
         fbx_anim.writeObjectDefs(fp, action, config)
     if not config.binary: fp.write('}\n\n')
+
+    fbx_utils.debugWrite(genTree(fp))
 
     # 3) FBX object properties (the actual data)
     fbx_header.writeObjectProps(fp, config)
@@ -163,6 +172,8 @@ def exportFbx(filepath, config):
         # TODO support binary FBX animations export
         fbx_anim.writeObjectProps(fp, action, skel, config)
     if not config.binary: fp.write('}\n\n')
+
+    fbx_utils.debugWrite(genTree(fp))
 
     # 4) FBX node links
     fbx_utils.startLinking()
