@@ -557,16 +557,21 @@ FBXTemplate = namedtuple("FBXTemplate", ("type_name", "prop_type_name", "propert
 
 def get_properties(properties):
     for p in properties:
-        if len(p) < 3:
+        log.debug(p)
+        if len(p) < 2:
             continue
+        if len(p) == 2:
+            name = p[0]
+            value, ptype, animatable = p[1]
+            custom = False
         if len(p) == 3:
             name, ptype, value = p
             animatable = False
             custom = False
-        elif len(p) == 4:
+        if len(p) == 4:
             name, ptype, value, animatable = p
             custom = False
-        else:
+        if len(p) > 4:
             name, ptype, value, animatable, custom = p
 
         yield (name, ptype, value, animatable, custom)
@@ -579,11 +584,13 @@ def fbx_template_generate(definitionsNode, objectType_name, users_count, propert
         elem = elem_data_single_string(template, b"PropertyTemplate", propertyTemplate_name)
         props = elem_properties(elem)
 
+        log.debug("--- fbx_template_generate ---")
+        log.debug(len(properties))
+
         for name, ptype, value, animatable, custom in get_properties(properties):
             try:
                 elem_props_set(props, ptype, name, value, animatable, custom)
             except Exception as e:
-                import log
                 log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
 
 
