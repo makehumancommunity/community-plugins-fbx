@@ -105,9 +105,6 @@ class FBXElem:
         self.props.append(data)
 
     def add_float64(self, data):
-        log.debug("--add_float64--")
-        log.debug(data)
-        log.debug(type(data))
         assert(isinstance(data, float))
         data = pack('<d', data)
 
@@ -122,9 +119,6 @@ class FBXElem:
         self.props.append(data)
 
     def add_string(self, data):
-        log.debug("--add_string--")
-        log.debug(data)
-        log.debug(type(data))
         assert(isinstance(data, bytes))
         data = pack('<I', len(data)) + data
 
