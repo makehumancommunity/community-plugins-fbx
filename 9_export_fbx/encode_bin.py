@@ -30,7 +30,7 @@ except:
 from struct import pack
 import array
 import zlib
-import log
+# import log
 from core import G
 
 _BLOCK_SENTINEL_LENGTH = 13
@@ -99,6 +99,8 @@ class FBXElem:
         self.props.append(data)
 
     def add_float32(self, data):
+        if isinstance(data, int):
+            data = float(data)
         assert(isinstance(data, float))
         data = pack('<f', data)
 
@@ -106,6 +108,8 @@ class FBXElem:
         self.props.append(data)
 
     def add_float64(self, data):
+        if isinstance(data, int):
+            data = float(data)
         assert(isinstance(data, float))
         data = pack('<d', data)
 
@@ -304,7 +308,8 @@ def _write_timedate_hack(elem_root):
             break
 
     if ok != 2:
-        log.debug("Missing fields!")
+        pass
+        #log.debug("Missing fields!")
 
 def addChild(elem, indent):
     i = indent
@@ -318,12 +323,14 @@ def addChild(elem, indent):
     return val
 
 def genTree(elem_root):
+    return ' '
     val = "ROOT\n"
     for elem in elem_root.elems:
         val = val + addChild(elem, 2)
     return val
 
 def debugWrite(content, location = "generic"):
+    return
     if hasattr(G.app, "mhapi"):
         G.app.mhapi.utility.debugWrite(content, "FBX2", location)
 

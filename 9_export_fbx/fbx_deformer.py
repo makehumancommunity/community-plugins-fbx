@@ -38,6 +38,7 @@ Fbx mesh
 import transformations as tm
 
 from .fbx_utils import *
+from .fbx_binary import *
 
 #--------------------------------------------------------------------
 #   Object definitions
@@ -200,7 +201,7 @@ def writeDeformer(fp, name, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, b'Objects')
-        fbx_binary.fbx_data_deformer(elem, key, id, properties)
+        fbx_binary.fbx_data_deformer(elem, bytes(key, 'utf-8'), id, properties)
         return
 
     from . import fbx_utils
@@ -225,7 +226,7 @@ def writeSubDeformer(fp, name, bone, weights, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, b'Objects')
-        fbx_binary.fbx_data_subdeformer(elem, key, id, weights[0], weights[1], bindmat, bindinv)
+        fbx_binary.fbx_data_subdeformer(elem, bytes(key, 'utf-8'), id, weights[0], weights[1], bindmat, bindinv)
         return
 
     nVertexWeights = len(weights[0])
@@ -261,7 +262,7 @@ def writeBindPose(fp, meshes, skel, config):
     if config.binary:
         from . import fbx_binary
         elem = fbx_binary.get_child_element(fp, b'Objects')
-        pelem = fbx_binary.fbx_data_bindpose_element(elem, key, id, count)
+        pelem = fbx_binary.fbx_data_bindpose_element(elem, bytes(key, 'utf-8'), id, count)
     else:
         fp.write(
             '    Pose: %d, "%s", "BindPose" {\n' % (id, key)+
@@ -274,7 +275,7 @@ def writeBindPose(fp, meshes, skel, config):
     key = "Model::%s" % skel.name
     if config.binary:
         id,_ = getId(key)
-        fbx_binary.fbx_data_pose_node_element(pelem, key, id, skelbindmat)
+        fbx_binary.fbx_data_pose_node_element(pelem, bytes(key, 'utf-8'), id, skelbindmat)
     else:
         poseNode(fp, key, skelbindmat)
 
@@ -282,7 +283,7 @@ def writeBindPose(fp, meshes, skel, config):
         key = "Model::%sMesh" % mesh.name
         if config.binary:
             id,_ = getId(key)
-            fbx_binary.fbx_data_pose_node_element(pelem, key, id, skelbindmat)
+            fbx_binary.fbx_data_pose_node_element(pelem, bytes(key, 'utf-8'), id, skelbindmat)
         else:
             poseNode(fp, key, skelbindmat)
 
@@ -291,7 +292,7 @@ def writeBindPose(fp, meshes, skel, config):
         bindmat,_ = bone.getBindMatrix(config.offset)
         if config.binary:
             id,_ = getId(key)
-            fbx_binary.fbx_data_pose_node_element(pelem, key, id, bindmat)
+            fbx_binary.fbx_data_pose_node_element(pelem, bytes(key, 'utf-8'), id, bindmat)
         else:
             poseNode(fp, key, bindmat)
 

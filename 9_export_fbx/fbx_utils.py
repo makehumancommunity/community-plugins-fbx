@@ -40,6 +40,7 @@ from .fbx_utils_bin import *
 from core import G
 
 def debugWrite(content, location = "generic"):
+    return
     if hasattr(G.app, "mhapi"):
         G.app.mhapi.utility.debugWrite(content, "FBX", location)
 

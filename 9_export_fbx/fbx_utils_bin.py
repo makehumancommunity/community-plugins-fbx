@@ -24,7 +24,7 @@
 
 
 import math
-import log
+#import log
 from collections import namedtuple, OrderedDict
 from . import encode_bin, data_types
 
@@ -467,12 +467,12 @@ def _elem_props_set(elem, ptype, name, value, flags):
     elif len(ptype) > 3:
         # We assume value is iterable, else it's a bug!
         for callback, val in zip(ptype[2:], value):
-            log.debug(p)
-            log.debug(type(p))
-            log.debug(callback)
-            log.debug(type(callback))
-            log.debug(val)
-            log.debug(type(val))
+            #log.debug(p)
+            #log.debug(type(p))
+            #log.debug(callback)
+            #log.debug(type(callback))
+            #log.debug(val)
+            #log.debug(type(val))
             getattr(p, callback)(val)
 
 
@@ -488,8 +488,7 @@ def _elem_props_flags(animatable, custom):
 
 def elem_props_set(elem, ptype, name, value=None, animatable=False, custom=False):
     ptype = FBX_PROPERTIES_DEFINITIONS[ptype]
-    import log
-    log.debug('propset %s %s %s', name, value, type(value))
+    #log.debug('propset %s %s %s', name, value, type(value))
     _elem_props_set(elem, ptype, name, value, _elem_props_flags(animatable, custom))
 
 
@@ -558,7 +557,7 @@ FBXTemplate = namedtuple("FBXTemplate", ("type_name", "prop_type_name", "propert
 
 def get_properties(properties):
     for p in properties:
-        log.debug(p)
+        #log.debug(p)
         if len(p) < 2:
             continue
         if len(p) == 2:
@@ -585,23 +584,24 @@ def fbx_template_generate(definitionsNode, objectType_name, users_count, propert
         elem = elem_data_single_string(template, b"PropertyTemplate", propertyTemplate_name)
         props = elem_properties(elem)
 
-        log.debug("--- fbx_template_generate ---")
-        log.debug(len(properties))
+        #log.debug("--- fbx_template_generate ---")
+        #log.debug(len(properties))
 
         for name, ptype, value, animatable, custom in get_properties(properties):
             try:
                 elem_props_set(props, ptype, name, value, animatable, custom)
             except Exception as e:
-                log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
+                #log.debug("FBX: Failed to write template prop (%r) (%s)", e, str((props, ptype, name, value, animatable)))
+                pass
 
 
 def fbx_name_class(name, cls=None):
     if cls is None:
         cls,name = name.split(b'::')
-    log.debug(cls)
-    log.debug(type(cls))
-    log.debug(name)
-    log.debug(type(name))
-    log.debug(type(FBX_NAME_CLASS_SEP))
+    #log.debug(cls)
+    #log.debug(type(cls))
+    #log.debug(name)
+    #log.debug(type(name))
+    #log.debug(type(FBX_NAME_CLASS_SEP))
     return FBX_NAME_CLASS_SEP.join((name, cls))
 

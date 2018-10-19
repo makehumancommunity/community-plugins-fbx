@@ -22,7 +22,7 @@
 
 import array
 import datetime
-import log
+# import log
 
 from .fbx_utils import *
 
@@ -244,7 +244,7 @@ def fbx_data_bindpose_element(objectsParent, key, id, count):
     # We assume bind pose for our bones are their "Editmode" pose...
     # All matrices are expected in global (world) space.
     fbx_pose = elem_data_single_int64(objectsParent, b"Pose", id)
-    fbx_pose.add_string(fbx_name_class(key.encode()))
+    fbx_pose.add_string(fbx_name_class(key))
     fbx_pose.add_string(b"BindPose")
 
     elem_data_single_string(fbx_pose, b"Type", b"BindPose")
@@ -260,11 +260,11 @@ def fbx_data_pose_node_element(bindposeParent, key, id, bindmat):
 
 def fbx_data_mesh_element(objectsParent, key, id, properties, coord, fvert, vnorm, texco, fuv):
     geom = elem_data_single_int64(objectsParent, b"Geometry", id)  #get_fbx_uuid_from_key(key))
-    log.debug("---KEY---")
-    log.debug(key)
-    log.debug(type(key))
+    #log.debug("---KEY---")
+    #log.debug(key)
+    #log.debug(type(key))
     res = key.encode()
-    log.debug(type(res))
+    #log.debug(type(res))
     geom.add_string(fbx_name_class(res))
     geom.add_string(b"Mesh")
 
@@ -478,8 +478,8 @@ def fbx_data_model_element(objectsParent, key, id, properties):
 
 def fbx_data_material(objectsParent, key, id, properties):
     fbx_mat = elem_data_single_int64(objectsParent, b"Material", id)
-    log.debug(key)
-    log.debug(type(key))
+    #log.debug(key)
+    #log.debug(type(key))
     fbx_mat.add_string(fbx_name_class(key))
     fbx_mat.add_string(b"")
 
@@ -489,12 +489,12 @@ def fbx_data_material(objectsParent, key, id, properties):
 
     props = elem_properties(fbx_mat)
     for pname, ptype, value, animatable, custom in get_properties(properties):
-        log.debug("--- fbx_data_material -> get_properties ---")
-        log.debug(pname)
-        log.debug(ptype)
-        log.debug(value)
-        log.debug(animatable)
-        log.debug(custom)
+        #log.debug("--- fbx_data_material -> get_properties ---")
+        #log.debug(pname)
+        #log.debug(ptype)
+        #log.debug(value)
+        #log.debug(animatable)
+        #log.debug(custom)
         elem_props_set(props, ptype, pname, value, animatable, custom)
 
 
@@ -554,7 +554,7 @@ def fbx_data_skeleton_bone_model(objectsParent, key, id, properties):
     fbx_bo.add_string(b"LimbNode")
     elem_data_single_int32(fbx_bo, b"Version", FBX_MODELS_VERSION)
     elem_data_single_bool(fbx_bo, b"Shading", True)
-    elem_data_single_string(fbx_bo, b"Culling", "CullingOff")
+    elem_data_single_string(fbx_bo, b"Culling", b"CullingOff")
 
     props = elem_properties(fbx_bo)
     for pname, ptype, value, animatable, custom in get_properties(properties):
@@ -586,7 +586,7 @@ def fbx_data_skeleton_model(objectsParent, key, id, properties):
     fbx_bo.add_string(b"Null")
     elem_data_single_int32(fbx_bo, b"Version", FBX_MODELS_VERSION)
     elem_data_single_bool(fbx_bo, b"Shading", True)
-    elem_data_single_string(fbx_bo, b"Culling", "CullingOff")
+    elem_data_single_string(fbx_bo, b"Culling", b"CullingOff")
 
     props = elem_properties(fbx_bo)
     for pname, ptype, value, animatable, custom in get_properties(properties):

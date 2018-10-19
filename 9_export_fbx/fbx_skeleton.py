@@ -135,9 +135,9 @@ def writeObjectDefs(fp, meshes, skel, config):
     ]
 
     skel_properties = [
-        ("Color",           "p_color_rgb",  [0.8,0.8,0.8]),
-        ("Size",            "p_double",     100),
-        ("LimbLength",      "p_double",     1)  # TODO this property had special "H" flag, is this required?
+        (b"Color",           "p_color_rgb",  [0.8,0.8,0.8]),
+        (b"Size",            "p_double",     100),
+        (b"LimbLength",      "p_double",     1)  # TODO this property had special "H" flag, is this required?
     ]
 
     if config.binary:
@@ -196,8 +196,8 @@ def writeNodeAttributeProp(fp, bone, config):
     id,key = getId("NodeAttribute::%s" % bone.name)
 
     properties = [
-        ("Size",        "p_double",     1),
-        ("LimbLength",  "p_double",     bone.length)  # TODO what to do with "H" flag?
+        (b"Size",        "p_double",     1),
+        (b"LimbLength",  "p_double",     bone.length)  # TODO what to do with "H" flag?
     ]
 
     if config.binary:
