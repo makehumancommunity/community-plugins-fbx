@@ -52,6 +52,8 @@ from . import fbx_anim
 
 from .encode_bin import genTree
 
+DEBUGWRITE=False
+
 def exportFbx(filepath, config):
     G.app.progress(0, text="Preparing")
 
@@ -60,7 +62,7 @@ def exportFbx(filepath, config):
 
     log.message("Write FBX file %s" % filepath)
 
-    if hasattr(G.app, "mhapi"):
+    if hasattr(G.app, "mhapi") and DEBUGWRITE:
         G.app.mhapi.utility.resetDebugWriter("FBX")
 
     filename = os.path.basename(filepath)

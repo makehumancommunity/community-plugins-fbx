@@ -33,6 +33,8 @@ import zlib
 # import log
 from core import G
 
+DEBUGWRITE=False
+
 _BLOCK_SENTINEL_LENGTH = 13
 _BLOCK_SENTINEL_DATA = (b'\0' * _BLOCK_SENTINEL_LENGTH)
 _IS_BIG_ENDIAN = (__import__("sys").byteorder != 'little')
@@ -232,7 +234,7 @@ class FBXElem:
         return offset
 
     def _write(self, write, tell, is_last):
-        debugWrite("elem._write " + G.app.mhapi.utility.getValueAsString(self.id))
+        # debugWrite("elem._write " + G.app.mhapi.utility.getValueAsString(self.id))
 
         assert (self._end_offset != -1)
         assert (self._props_length != -1)
@@ -312,6 +314,8 @@ def _write_timedate_hack(elem_root):
         #log.debug("Missing fields!")
 
 def addChild(elem, indent):
+    if not hasattr(G.app, "mhapi"):
+        return
     i = indent
     val = ""
     while i > 0:
@@ -323,14 +327,16 @@ def addChild(elem, indent):
     return val
 
 def genTree(elem_root):
-    return ' '
+    if not DEBUGWRITE:
+        return ' '
     val = "ROOT\n"
     for elem in elem_root.elems:
         val = val + addChild(elem, 2)
     return val
 
 def debugWrite(content, location = "generic"):
-    return
+    if not DEBUGWRITE:
+        return
     if hasattr(G.app, "mhapi"):
         G.app.mhapi.utility.debugWrite(content, "FBX2", location)
 
@@ -341,8 +347,9 @@ def write(fn, elem_root, version=None):
         from . import fbx_utils
         version = fbx_utils.FBX_VERSION
 
-    G.app.mhapi.utility.resetDebugWriter("FBX2")
-    debugWrite(genTree(elem_root))
+    if DEBUGWRITE:
+        G.app.mhapi.utility.resetDebugWriter("FBX2")
+        debugWrite(genTree(elem_root))
 
     with open(fn, 'wb') as f:
         write = f.write
